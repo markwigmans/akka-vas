@@ -25,6 +25,7 @@ import com.chessix.vas.actors.messages.JournalMessage;
 import com.chessix.vas.actors.messages.Validate;
 import com.chessix.vas.dto.ClasCreated;
 import com.chessix.vas.service.ClasService;
+import com.chessix.vas.service.ValidationService;
 
 /**
  * 
@@ -38,21 +39,23 @@ public class ClasController {
 
     private final ActorSystem system;
     private final ClasService clasService;
+    private final ValidationService validationService;
 
-    private final Timeout timeout = new Timeout(Duration.create(30, TimeUnit.SECONDS));
+    private final Timeout timeout = new Timeout(Duration.create(10, TimeUnit.SECONDS));
 
     /**
      * Auto wired constructor
      */
     @Autowired
-    public ClasController(final ActorSystem system, final ClasService clasService) {
+    public ClasController(final ActorSystem system, final ClasService clasService,  final ValidationService validationService) {
         super();
         this.system = system;
         this.clasService = clasService;
+        this.validationService = validationService;
     }
 
     @RequestMapping(value = "/{clasId}", method = RequestMethod.POST)
-    public synchronized ClasCreated createClas(@PathVariable final String clasId) throws InterruptedException {
+    public synchronized ClasCreated createClas(@PathVariable final String clasId) {
         log.info("createClas({})", clasId);
         if (clasService.create(clasId)) {
             return new ClasCreated(clasId, true, "CLAS created");
@@ -62,7 +65,7 @@ public class ClasController {
     }
 
     @RequestMapping(value = "/{clasId}/clean", method = RequestMethod.POST)
-    public DeferredResult<Object> clean(@PathVariable final String clasId) throws InterruptedException {
+    public DeferredResult<Object> clean(@PathVariable final String clasId) {
         log.info("clean({})", clasId);
 
         clasService.getJournal().tell(new JournalMessage.Clean(clasId), ActorRef.noSender());
@@ -92,7 +95,7 @@ public class ClasController {
     }
 
     @RequestMapping(value = "/{clasId}/count", method = RequestMethod.GET)
-    public DeferredResult<Object> count(@PathVariable final String clasId) throws InterruptedException {
+    public DeferredResult<Object> count(@PathVariable final String clasId) {
         log.info("clean({})", clasId);
 
         final DeferredResult<Object> deferredResult = new DeferredResult<Object>();
@@ -118,8 +121,8 @@ public class ClasController {
         return deferredResult;
     }
 
-    @RequestMapping(value = "/{clasId}/validate", method = RequestMethod.GET)
-    public DeferredResult<Object> validate(@PathVariable final String clasId) throws InterruptedException {
+    @RequestMapping(value = "/{clasId}/validate/fast", method = RequestMethod.GET)
+    public DeferredResult<Object> fastValidate(@PathVariable final String clasId) {
         log.info("clean({})", clasId);
 
         final DeferredResult<Object> deferredResult = new DeferredResult<Object>();
@@ -139,9 +142,19 @@ public class ClasController {
                 }
             }, system.dispatcher());
         } else {
-            deferredResult.setResult(new Count.Response(false, null, "CLAS does not exist"));
+            deferredResult.setResult(new Validate.Response(false, "CLAS does not exist"));
         }
 
         return deferredResult;
+    }
+
+    @RequestMapping(value = "/{clasId}/validate/data", method = RequestMethod.GET)
+    public Validate.Response dataValidate(@PathVariable final String clasId) {
+        return new Validate.Response(clasService.validate(clasId), "");
+    }
+
+    @RequestMapping(value = "/{clasId}/validate/insync", method = RequestMethod.GET)
+    public Validate.Response validateInSync(@PathVariable final String clasId) {
+        return new Validate.Response(validationService.validate(clasId), "");
     }
 }

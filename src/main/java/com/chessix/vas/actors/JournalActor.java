@@ -10,6 +10,7 @@ import com.chessix.vas.actors.messages.JournalMessage;
 import com.chessix.vas.actors.messages.JournalMessage.AccountCreated;
 import com.chessix.vas.actors.messages.JournalMessage.ClasCreated;
 import com.chessix.vas.actors.messages.JournalMessage.Transfer;
+import com.chessix.vas.actors.messages.Ready;
 import com.chessix.vas.db.DBService;
 
 /**
@@ -50,6 +51,8 @@ public class JournalActor extends UntypedActor {
             createTransfer((JournalMessage.Transfer) message);
         } else if (message instanceof JournalMessage.Clean) {
             clean((JournalMessage.Clean) message);
+        } else if (message instanceof Ready.Request) {
+            getSender().tell(new Ready.Response(true, "Ready"), getSelf());
         } else {
             unhandled(message);
         }

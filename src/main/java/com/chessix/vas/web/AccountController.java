@@ -57,13 +57,12 @@ public class AccountController {
     }
 
     @RequestMapping(value = "/{clasId}", method = RequestMethod.POST)
-    public DeferredResult<Object> createAccount(@PathVariable final String clasId) throws InterruptedException {
+    public DeferredResult<Object> createAccount(@PathVariable final String clasId) {
         return createAccount(clasId, null);
     }
 
     @RequestMapping(value = "/{clasId}/{accountId}", method = RequestMethod.POST)
-    public DeferredResult<Object> createAccount(@PathVariable final String clasId, @PathVariable final String accountId)
-            throws InterruptedException {
+    public DeferredResult<Object> createAccount(@PathVariable final String clasId, @PathVariable final String accountId) {
         log.info("createAccount({})", clasId);
         final ActorRef clas = clasService.getClas(clasId);
         final DeferredResult<Object> deferredResult = new DeferredResult<Object>();
@@ -92,7 +91,7 @@ public class AccountController {
 
     @RequestMapping(value = "/{clasId}/range/from/{start}/count/{count}", method = RequestMethod.POST)
     public DeferredResult<Object> createAccounts(@PathVariable final String clasId, @PathVariable final String start,
-            @PathVariable final String count) throws InterruptedException {
+            @PathVariable final String count) {
         log.info("createAccounts({},{},{})", clasId, start, count);
         final ActorRef clas = clasService.getClas(clasId);
         final DeferredResult<Object> deferredResult = new DeferredResult<Object>();

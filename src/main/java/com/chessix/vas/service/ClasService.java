@@ -7,6 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +19,7 @@ import com.chessix.vas.actors.ClasActor;
 import com.chessix.vas.actors.JournalActor;
 import com.chessix.vas.actors.messages.CreateAccount;
 import com.chessix.vas.actors.messages.JournalMessage;
+import com.chessix.vas.db.Account;
 import com.chessix.vas.db.DBService;
 import com.google.common.collect.Maps;
 
@@ -24,22 +27,25 @@ import com.google.common.collect.Maps;
 @Slf4j
 public class ClasService {
 
-    private final ActorSystem actorSystem;
+    private final ActorSystem system;
     private final StringRedisTemplate redisTemplate;
+    private final DBService dbService;
     private final ActorRef journalActor;
     private final ConcurrentMap<String, ActorRef> clasManager;
 
     private final int accountLength = 20;
+    private final static int PAGE_SIZE = 1000;
 
     /**
      * Auto wired constructor
      */
     @Autowired
-    public ClasService(final ActorSystem actorSystem, final StringRedisTemplate redisTemplate, final DBService dbService) {
+    public ClasService(final ActorSystem system, final StringRedisTemplate redisTemplate, final DBService dbService) {
         super();
-        this.actorSystem = actorSystem;
+        this.system = system;
         this.redisTemplate = redisTemplate;
-        this.journalActor = actorSystem.actorOf(JournalActor.props(dbService), "Journalizer");
+        this.dbService = dbService;
+        this.journalActor = system.actorOf(JournalActor.props(dbService), "Journalizer");
         this.clasManager = Maps.newConcurrentMap();
     }
 
@@ -56,7 +62,7 @@ public class ClasService {
         val ops = redisTemplate.boundHashOps(clasName);
         if (getClas(clasName) == null || ops.size() == 0) {
             log.debug("create({}) : newly", clasId);
-            val clas = getClas(clasName) != null ? getClas(clasName) : actorSystem.actorOf(
+            val clas = getClas(clasName) != null ? getClas(clasName) : system.actorOf(
                     ClasActor.props(clasName, accountLength, journalActor, redisTemplate), clasActorName(clasName));
             journalActor.tell(new JournalMessage.ClasCreated(clasName), ActorRef.noSender());
             clas.tell(new CreateAccount.Request(ClasActor.NOSTRO), ActorRef.noSender());
@@ -69,6 +75,27 @@ public class ClasService {
         // clas is already created
         log.debug("create({}) : already there", clasId);
         return false;
+    }
+
+    /**
+     * Validate given clas, if all accounts count to 0.
+     * 
+     * @param clasId
+     * @return
+     */
+    public boolean validate(final String clasId) {
+        int page = 0;
+        long total = 0;
+        Page<Account> accounts;
+        do {
+            log.debug("validate({}) : page: {}", clasId, page);
+            accounts = dbService.findAccountsByClas(clasId, new PageRequest(page, PAGE_SIZE));
+            for (final Account account : accounts) {
+                total += account.getBalance();
+            }
+            page += 1;
+        } while (accounts.hasNextPage());
+        return total == 0;
     }
 
     public ActorRef getJournal() {
@@ -95,7 +122,7 @@ public class ClasService {
                     log.debug("getClas({}) : in clas manager, size: {}", clasId, ops.size());
                     if (ops.size() > 0) {
                         log.debug("getClas({}) : create clas actor", clasId);
-                        clas = actorSystem.actorOf(ClasActor.props(clasName, accountLength, journalActor, redisTemplate),
+                        clas = system.actorOf(ClasActor.props(clasName, accountLength, journalActor, redisTemplate),
                                 clasActorName(clasName));
                         clasManager.putIfAbsent(clasName, clas);
                     } else {

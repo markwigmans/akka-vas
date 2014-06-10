@@ -1,10 +1,12 @@
 package com.chessix.vas.db;
 
-import javax.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.val;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import com.chessix.vas.actors.messages.JournalMessage.AccountCreated;
@@ -63,6 +65,12 @@ public class DBService {
             accountRepository.deleteClasAccounts(clas);
             clasRepository.delete(clas);
         }
+    }
+
+    @Transactional(readOnly = true)
+    public Page<Account> findAccountsByClas(String clasId, PageRequest pageRequest) {
+        val clas = clasRepository.findByExternalId(clasId);
+        return accountRepository.findByClas(clas, pageRequest);
     }
 
 }
