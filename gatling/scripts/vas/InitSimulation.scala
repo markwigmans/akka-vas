@@ -47,9 +47,9 @@ class InitSimulation extends Simulation {
       .exec(http("create accounts").post("account/${clasId}/range/from/${start.accounts}/count/${count.accounts}").asJSON.check(status.is(200)))
     }  
      
-  val initScn = scenario("Initialize").exec(cleanChain,clasChain,accountChain)
+  val scn = scenario("Initialize").exec(cleanChain,clasChain,accountChain)
      
   setUp(
-    initScn.users(1).protocolConfig(Config.httpConf)
+    scn.users(1).protocolConfig(Config.httpConf)
   )      
 }
