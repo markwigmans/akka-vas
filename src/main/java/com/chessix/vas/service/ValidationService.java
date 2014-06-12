@@ -43,9 +43,6 @@ public class ValidationService {
     /**
      * Validate given clas, if all accounts have the same value in the different
      * layers.
-     * 
-     * @param clasId
-     * @return
      */
     public boolean validate(final String clasId) {
         int page = 0;
@@ -63,7 +60,7 @@ public class ValidationService {
                 result = result && compare;
             }
             page += 1;
-        } while (result && accounts.hasNextPage());
+        } while (result && accounts.hasNext());
         return result;
     }
 

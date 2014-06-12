@@ -1,6 +1,7 @@
 akka-vas
 ========
-This is a demonstrator of using Akka / Lambda Architecture with a toy version of a Account System.
+This is a demonstrator of using Reactive (http://www.reactivemanifesto.org/) / Lambda Architecture (http://lambda-architecture.net/) 
+with a toy version of an Account System.
 
 To use the application, perform the following steps:
 - installation of maven/java-7 is already assumed

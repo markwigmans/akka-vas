@@ -36,6 +36,11 @@ public class ClasService {
     private final int accountLength = 20;
     private final static int PAGE_SIZE = 1000;
 
+
+    public static final String NOSTRO = "nostro";
+    public static final String OUTBOUND = "outbound";
+    public static final String EXCEPTION = "exception";
+    
     /**
      * Auto wired constructor
      */
@@ -65,9 +70,9 @@ public class ClasService {
             val clas = getClas(clasName) != null ? getClas(clasName) : system.actorOf(
                     ClasActor.props(clasName, accountLength, journalActor, redisTemplate), clasActorName(clasName));
             journalActor.tell(new JournalMessage.ClasCreated(clasName), ActorRef.noSender());
-            clas.tell(new CreateAccount.Request(ClasActor.NOSTRO), ActorRef.noSender());
-            clas.tell(new CreateAccount.Request(ClasActor.OUTBOUND), ActorRef.noSender());
-            clas.tell(new CreateAccount.Request(ClasActor.EXCEPTION), ActorRef.noSender());
+            clas.tell(new CreateAccount.Request(NOSTRO), ActorRef.noSender());
+            clas.tell(new CreateAccount.Request(OUTBOUND), ActorRef.noSender());
+            clas.tell(new CreateAccount.Request(EXCEPTION), ActorRef.noSender());
             log.info("CLAS created: {}", clas);
             clasManager.putIfAbsent(clasName, clas);
             return true;
@@ -94,7 +99,7 @@ public class ClasService {
                 total += account.getBalance();
             }
             page += 1;
-        } while (accounts.hasNextPage());
+        } while (accounts.hasNext());
         return total == 0;
     }
 

@@ -17,7 +17,6 @@ import akka.actor.Props;
 import akka.actor.UntypedActor;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
-import akka.japi.Creator;
 
 import com.chessix.vas.actors.messages.Balance;
 import com.chessix.vas.actors.messages.Clean;
@@ -42,16 +41,9 @@ public class ClerkActor extends UntypedActor {
     private final ActorRef journalActor;
     private final StringRedisTemplate redisTemplate;
 
-    @SuppressWarnings("serial")
     public static Props props(final String clasId, final int accountLength, final ActorRef journalActor,
             final StringRedisTemplate redisTemplate) {
-        return Props.create(new Creator<ClerkActor>() {
-
-            @Override
-            public ClerkActor create() throws Exception {
-                return new ClerkActor(clasId, accountLength, journalActor, redisTemplate);
-            }
-        });
+        return Props.create(ClerkActor.class, clasId, accountLength, journalActor, redisTemplate);
     }
 
     public ClerkActor(final String clasId, final int accountLength, final ActorRef journalActor,

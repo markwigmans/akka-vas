@@ -4,7 +4,6 @@ import akka.actor.Props;
 import akka.actor.UntypedActor;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
-import akka.japi.Creator;
 
 import com.chessix.vas.actors.messages.JournalMessage;
 import com.chessix.vas.actors.messages.JournalMessage.AccountCreated;
@@ -24,15 +23,8 @@ public class JournalActor extends UntypedActor {
 
     private final DBService service;
 
-    @SuppressWarnings("serial")
     public static Props props(final DBService service) {
-        return Props.create(new Creator<JournalActor>() {
-
-            @Override
-            public JournalActor create() throws Exception {
-                return new JournalActor(service);
-            }
-        });
+        return Props.create(JournalActor.class, service);
     }
 
     public JournalActor(final DBService service) {
