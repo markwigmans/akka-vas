@@ -46,7 +46,7 @@ public class ClerkActor extends UntypedActor {
         return Props.create(ClerkActor.class, clasId, accountLength, journalActor, redisTemplate);
     }
 
-    public ClerkActor(final String clasId, final int accountLength, final ActorRef journalActor,
+    private ClerkActor(final String clasId, final int accountLength, final ActorRef journalActor,
             final StringRedisTemplate redisTemplate) {
         super();
         this.clasId = clasId;
@@ -59,33 +59,40 @@ public class ClerkActor extends UntypedActor {
     public void onReceive(final Object message) throws Exception {
         log.debug("Received message: {}", message);
         if (message instanceof CreateAccount.Request) {
-            final String accountId = createAccount((CreateAccount.Request) message);
+            val request = (CreateAccount.Request) message;
+            final String accountId = createAccount(request);
             if (StringUtils.isNoneBlank(accountId)) {
-                getSender().tell(new CreateAccount.Response(true, accountId, ""), getSelf());
+                getSender().tell(new CreateAccount.ResponseBuilder(true).clasId(request.getClasId()).accountId(accountId).build(),
+                        getSelf());
                 journalActor.tell(new JournalMessage.AccountCreated(clasId, accountId), getSelf());
             } else {
-                getSender().tell(new CreateAccount.Response(false, null, "Account does already exist"), getSelf());
+                getSender().tell(
+                        new CreateAccount.ResponseBuilder(false).clasId(request.getClasId()).message("Account does already exist")
+                                .build(), getSelf());
             }
         } else if (message instanceof Transfer.Request) {
             val request = (Transfer.Request) message;
             if (transfer(request)) {
-                getSender().tell(new Transfer.Response(true, "Ok"), getSelf());
+                getSender().tell(new Transfer.ResponseBuilder(true).message("Ok").build(), getSelf());
                 journalActor.tell(new JournalMessage.Transfer(clasId, request.getFrom(), request.getTo(), request.getAmount(),
                         new Date()), getSelf());
             } else {
-                getSender().tell(new Transfer.Response(false, "Accounts do not exist"), getSelf());
+                getSender().tell(new Transfer.ResponseBuilder(false).message("Accounts do not exist").build(), getSelf());
             }
         } else if (message instanceof Balance.Request) {
             val balance = balance((Balance.Request) message);
-            getSender().tell(new Balance.Response(balance != null, balance, ""), getSelf());
+            getSender().tell(new Balance.ResponseBuilder(balance != null).amount(balance).build(), getSelf());
         } else if (message instanceof Clean.Request) {
-            clean();
-            getSender().tell(new Clean.Response(true, "Ok"), getSelf());
+            val request = (Clean.Request) message;
+            clean(request);
+            getSender().tell(new Clean.ResponseBuilder(true).clasId(request.getClasId()).message("Ok").build(), getSelf());
         } else if (message instanceof Count.Request) {
-            val count = count((Count.Request) message);
-            getSender().tell(new Count.Response(count != null, count, ""), getSelf());
+            val request = (Count.Request) message;
+            val count = count(request);
+            getSender().tell(new Count.ResponseBuilder(count != null).clasId(request.getClasId()).count(count).build(), getSelf());
         } else if (message instanceof Validate.Request) {
-            getSender().tell(new Validate.Response(validate(), ""), getSelf());
+            val request = (Validate.Request) message;
+            getSender().tell(new Validate.ResponseBuilder(validate()).clasId(request.getClasId()).build(), getSelf());
         } else {
             unhandled(message);
         }
@@ -107,7 +114,7 @@ public class ClerkActor extends UntypedActor {
     /**
      * 
      */
-    private void clean() {
+    private void clean(final Clean.Request request) {
         val ops = redisTemplate.boundHashOps(clasId);
         val keys = ops.keys();
 

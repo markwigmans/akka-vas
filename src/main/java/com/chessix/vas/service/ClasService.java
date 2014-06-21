@@ -36,11 +36,10 @@ public class ClasService {
     private final int accountLength = 20;
     private final static int PAGE_SIZE = 1000;
 
-
     public static final String NOSTRO = "nostro";
     public static final String OUTBOUND = "outbound";
     public static final String EXCEPTION = "exception";
-    
+
     /**
      * Auto wired constructor
      */
@@ -70,9 +69,9 @@ public class ClasService {
             val clas = getClas(clasName) != null ? getClas(clasName) : system.actorOf(
                     ClasActor.props(clasName, accountLength, journalActor, redisTemplate), clasActorName(clasName));
             journalActor.tell(new JournalMessage.ClasCreated(clasName), ActorRef.noSender());
-            clas.tell(new CreateAccount.Request(NOSTRO), ActorRef.noSender());
-            clas.tell(new CreateAccount.Request(OUTBOUND), ActorRef.noSender());
-            clas.tell(new CreateAccount.Request(EXCEPTION), ActorRef.noSender());
+            clas.tell(new CreateAccount.RequestBuilder(clasId).accountId(NOSTRO).build(), ActorRef.noSender());
+            clas.tell(new CreateAccount.RequestBuilder(clasId).accountId(OUTBOUND).build(), ActorRef.noSender());
+            clas.tell(new CreateAccount.RequestBuilder(clasId).accountId(EXCEPTION).build(), ActorRef.noSender());
             log.info("CLAS created: {}", clas);
             clasManager.putIfAbsent(clasName, clas);
             return true;
@@ -84,9 +83,6 @@ public class ClasService {
 
     /**
      * Validate given clas, if all accounts count to 0.
-     * 
-     * @param clasId
-     * @return
      */
     public boolean validate(final String clasId) {
         int page = 0;

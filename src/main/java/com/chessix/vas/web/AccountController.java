@@ -1,33 +1,30 @@
 package com.chessix.vas.web;
 
-import java.util.List;
-import java.util.Vector;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.context.request.async.DeferredResult;
-
-import scala.concurrent.Future;
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.dispatch.OnComplete;
 import akka.dispatch.OnFailure;
 import akka.dispatch.OnSuccess;
 import akka.pattern.Patterns;
-
 import com.chessix.vas.actors.messages.Balance;
 import com.chessix.vas.actors.messages.CreateAccount;
 import com.chessix.vas.dto.AccountCreated;
 import com.chessix.vas.dto.SaldoDTO;
 import com.chessix.vas.service.AccountService;
 import com.chessix.vas.service.ClasService;
+import lombok.extern.slf4j.Slf4j;
+import lombok.val;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.async.DeferredResult;
+import scala.concurrent.Future;
+
+import java.util.List;
+import java.util.Vector;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 
@@ -63,11 +60,12 @@ public class AccountController {
 
     @RequestMapping(value = "/{clasId}/{accountId}", method = RequestMethod.POST)
     public DeferredResult<Object> createAccount(@PathVariable final String clasId, @PathVariable final String accountId) {
-        log.info("createAccount({})", clasId);
+        log.info("createAccount({},{})", clasId, accountId);
         final ActorRef clas = clasService.getClas(clasId);
         final DeferredResult<Object> deferredResult = new DeferredResult<Object>();
         if (clas != null) {
-            final Future<Object> future = Patterns.ask(clas, new CreateAccount.Request(accountId), timeout);
+            final Future<Object> future = Patterns.ask(clas, new CreateAccount.RequestBuilder(clasId).accountId(accountId).build(),
+                    timeout);
             future.onSuccess(new OnSuccess<Object>() {
                 @Override
                 public void onSuccess(final Object result) {
@@ -109,7 +107,8 @@ public class AccountController {
             for (int i = Integer.parseInt(start); i < Integer.parseInt(start) + countValue; i++) {
                 val accountId = Integer.toString(i);
                 log.debug("createAccounts() : create {}", accountId);
-                final Future<Object> future = Patterns.ask(clas, new CreateAccount.Request(accountId), timeout * countValue);
+                final Future<Object> future = Patterns.ask(clas, new CreateAccount.RequestBuilder(clasId).accountId(accountId)
+                        .build(), timeout * countValue);
                 future.onSuccess(new OnSuccess<Object>() {
                     @Override
                     public void onSuccess(final Object result) {
@@ -145,7 +144,8 @@ public class AccountController {
         final ActorRef clas = clasService.getClas(clasId);
         final DeferredResult<Object> deferredResult = new DeferredResult<Object>();
         if (clas != null) {
-            final Future<Object> future = Patterns.ask(clas, new Balance.Request(accountService.getAccountId(accountId)), timeout);
+            final Future<Object> future = Patterns.ask(clas,
+                    new Balance.RequestBuilder(accountService.getAccountId(accountId)).build(), timeout);
 
             future.onComplete(new OnComplete<Object>() {
                 @Override

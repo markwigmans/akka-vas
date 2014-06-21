@@ -57,7 +57,8 @@ public class ClerkActorTest {
         Mockito.when(ops.putIfAbsent(Mockito.eq(accountId), Mockito.anyString())).thenReturn(Boolean.TRUE);
 
         // Then
-        final Future<Object> future = akka.pattern.Patterns.ask(cleckRef, new CreateAccount.Request(accountId), 1000);
+        final Future<Object> future = akka.pattern.Patterns.ask(cleckRef,
+                new CreateAccount.RequestBuilder(clasId).accountId(accountId).build(), 1000);
         final CreateAccount.Response response = (Response) Await.result(future, Duration.Zero());
         Assert.assertEquals(accountId, response.getAccountId());
         Assert.assertTrue(response.isSuccessful());

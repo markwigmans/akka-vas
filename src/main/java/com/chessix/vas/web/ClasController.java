@@ -47,7 +47,7 @@ public class ClasController {
      * Auto wired constructor
      */
     @Autowired
-    public ClasController(final ActorSystem system, final ClasService clasService,  final ValidationService validationService) {
+    public ClasController(final ActorSystem system, final ClasService clasService, final ValidationService validationService) {
         super();
         this.system = system;
         this.clasService = clasService;
@@ -56,7 +56,7 @@ public class ClasController {
 
     @RequestMapping(value = "/{clasId}", method = RequestMethod.POST)
     public synchronized ClasCreated createClas(@PathVariable final String clasId) {
-        log.info("createClas({})", clasId);
+        log.debug("createClas({})", clasId);
         if (clasService.create(clasId)) {
             return new ClasCreated(clasId, true, "CLAS created");
         } else {
@@ -66,7 +66,7 @@ public class ClasController {
 
     @RequestMapping(value = "/{clasId}/clean", method = RequestMethod.POST)
     public DeferredResult<Object> clean(@PathVariable final String clasId) {
-        log.info("clean({})", clasId);
+        log.debug("clean({})", clasId);
 
         clasService.getJournal().tell(new JournalMessage.Clean(clasId), ActorRef.noSender());
 
@@ -74,7 +74,7 @@ public class ClasController {
         final ActorRef clas = clasService.getClas(clasId);
         if (clas != null) {
             // there is data
-            final Future<Object> future = Patterns.ask(clas, new Clean.Request(), timeout);
+            final Future<Object> future = Patterns.ask(clas, new Clean.RequestBuilder(clasId).build(), timeout);
             future.onComplete(new OnComplete<Object>() {
                 @Override
                 public void onComplete(final Throwable failure, final Object result) {
@@ -88,7 +88,7 @@ public class ClasController {
                 }
             }, system.dispatcher());
         } else {
-            deferredResult.setResult(new Clean.Response(true, "Clas was already removed"));
+            deferredResult.setResult(new Clean.ResponseBuilder(true).clasId(clasId).message("Clas was already removed").build());
         }
 
         return deferredResult;
@@ -96,12 +96,12 @@ public class ClasController {
 
     @RequestMapping(value = "/{clasId}/count", method = RequestMethod.GET)
     public DeferredResult<Object> count(@PathVariable final String clasId) {
-        log.info("clean({})", clasId);
+        log.debug("count({})", clasId);
 
         final DeferredResult<Object> deferredResult = new DeferredResult<Object>();
         final ActorRef clas = clasService.getClas(clasId);
         if (clas != null) {
-            final Future<Object> future = Patterns.ask(clas, new Count.Request(), timeout);
+            final Future<Object> future = Patterns.ask(clas, new Count.RequestBuilder(clasId).build(), timeout);
             future.onComplete(new OnComplete<Object>() {
                 @Override
                 public void onComplete(final Throwable failure, final Object result) {
@@ -115,7 +115,7 @@ public class ClasController {
                 }
             }, system.dispatcher());
         } else {
-            deferredResult.setResult(new Count.Response(false, null, "CLAS does not exist"));
+            deferredResult.setResult(new Count.ResponseBuilder(false).clasId(clasId).message("CLAS does not exist").build());
         }
 
         return deferredResult;
@@ -123,12 +123,12 @@ public class ClasController {
 
     @RequestMapping(value = "/{clasId}/validate/fast", method = RequestMethod.GET)
     public DeferredResult<Object> fastValidate(@PathVariable final String clasId) {
-        log.info("clean({})", clasId);
+        log.debug("fastValidate({})", clasId);
 
         final DeferredResult<Object> deferredResult = new DeferredResult<Object>();
         final ActorRef clas = clasService.getClas(clasId);
         if (clas != null) {
-            final Future<Object> future = Patterns.ask(clas, new Validate.Request(), timeout);
+            final Future<Object> future = Patterns.ask(clas, new Validate.RequestBuilder(clasId).build(), timeout);
             future.onComplete(new OnComplete<Object>() {
                 @Override
                 public void onComplete(final Throwable failure, final Object result) {
@@ -142,7 +142,7 @@ public class ClasController {
                 }
             }, system.dispatcher());
         } else {
-            deferredResult.setResult(new Validate.Response(false, "CLAS does not exist"));
+            deferredResult.setResult(new Validate.ResponseBuilder(false).clasId(clasId).message("CLAS does not exist").build());
         }
 
         return deferredResult;
@@ -150,11 +150,11 @@ public class ClasController {
 
     @RequestMapping(value = "/{clasId}/validate/data", method = RequestMethod.GET)
     public Validate.Response dataValidate(@PathVariable final String clasId) {
-        return new Validate.Response(clasService.validate(clasId), "");
+        return new Validate.ResponseBuilder(clasService.validate(clasId)).clasId(clasId).build();
     }
 
     @RequestMapping(value = "/{clasId}/validate/insync", method = RequestMethod.GET)
     public Validate.Response validateInSync(@PathVariable final String clasId) {
-        return new Validate.Response(validationService.validate(clasId), "");
+        return new Validate.ResponseBuilder(validationService.validate(clasId)).clasId(clasId).build();
     }
 }

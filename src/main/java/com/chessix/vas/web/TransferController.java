@@ -58,8 +58,8 @@ public class TransferController {
         final DeferredResult<Object> deferredResult = new DeferredResult<Object>();
         if (clas != null) {
             final ExecutionContext ec = actorSystem.dispatcher();
-            final Future<Object> future = Patterns.ask(clas,
-                    new Transfer.Request(accountService.getAccountId(from), accountService.getAccountId(to), amount), timeout);
+            final Future<Object> future = Patterns.ask(clas, new Transfer.RequestBuilder(accountService.getAccountId(from),
+                    accountService.getAccountId(to), amount).build(), timeout);
             future.onSuccess(new OnSuccess<Object>() {
                 @Override
                 public void onSuccess(final Object result) {

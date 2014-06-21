@@ -1,8 +1,9 @@
 package com.chessix.vas.actors.messages;
 
+import lombok.Value;
+
 import java.util.Date;
 
-import lombok.Value;
 
 /**
  * 

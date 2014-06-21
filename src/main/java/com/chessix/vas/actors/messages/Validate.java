@@ -1,6 +1,10 @@
 package com.chessix.vas.actors.messages;
 
-import lombok.Value;
+import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
+import lombok.experimental.FieldDefaults;
 
 /**
  * Validate the clas.
@@ -10,13 +14,69 @@ import lombok.Value;
  */
 public class Validate {
 
-    @Value
-    public static class Request {
+    @ToString
+    @EqualsAndHashCode
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    public static final class Request {
+        @Getter
+        String clasId;
+
+        private Request(final RequestBuilder requestBuilder) {
+            this.clasId = requestBuilder.clasId;
+        }
     }
 
-    @Value
-    public static class Response {
+    @ToString
+    @EqualsAndHashCode
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    public static final class Response {
+        @Getter
         boolean successful;
+        @Getter
+        String clasId;
+        @Getter
         String message;
+
+        private Response(ResponseBuilder responseBuilder) {
+            this.successful = responseBuilder.successful;
+            this.clasId = responseBuilder.clasId;
+            this.message = responseBuilder.message;
+        }
+    }
+
+    public static class RequestBuilder implements Builder<Request> {
+        private String clasId;
+
+        public RequestBuilder(final String clasId) {
+            this.clasId = clasId;
+        }
+
+        public Request build() {
+            return new Request(this);
+        }
+    }
+
+    public static class ResponseBuilder implements Builder<Response> {
+        private boolean successful;
+        private String clasId;
+        private String message;
+
+        public ResponseBuilder(final boolean successful) {
+            this.successful = successful;
+        }
+
+        public ResponseBuilder clasId(final String clasId) {
+            this.clasId = clasId;
+            return this;
+        }
+
+        public ResponseBuilder message(final String message) {
+            this.message = message;
+            return this;
+        }
+
+        public Response build() {
+            return new Response(this);
+        }
     }
 }

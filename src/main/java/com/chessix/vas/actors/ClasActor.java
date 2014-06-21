@@ -22,7 +22,7 @@ public class ClasActor extends UntypedActor {
 
     private final ActorRef router;
 
-    private static SupervisorStrategy strategy = new OneForOneStrategy(10, Duration.create("1 minute"),
+    private static final SupervisorStrategy strategy = new OneForOneStrategy(10, Duration.create("1 minute"),
             new Function<Throwable, Directive>() {
                 @Override
                 public Directive apply(final Throwable t) throws Exception {
@@ -38,7 +38,7 @@ public class ClasActor extends UntypedActor {
         return Props.create(ClasActor.class, clasId, accountLength, redisTemplate, journalActor);
     }
 
-    public ClasActor(final String clasId, final int accountLength, final StringRedisTemplate redisTemplate,
+    private ClasActor(final String clasId, final int accountLength, final StringRedisTemplate redisTemplate,
             final ActorRef journalActor) {
         super();
         final DefaultResizer resizer = new DefaultResizer(2, 15);

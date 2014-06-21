@@ -27,7 +27,7 @@ public class JournalActor extends UntypedActor {
         return Props.create(JournalActor.class, service);
     }
 
-    public JournalActor(final DBService service) {
+    private JournalActor(final DBService service) {
         super();
         this.service = service;
     }
@@ -44,7 +44,7 @@ public class JournalActor extends UntypedActor {
         } else if (message instanceof JournalMessage.Clean) {
             clean((JournalMessage.Clean) message);
         } else if (message instanceof Ready.Request) {
-            getSender().tell(new Ready.Response(true, "Ready"), getSelf());
+            getSender().tell(new Ready.ResponseBuilder(true).message("Ready").build(), getSelf());
         } else {
             unhandled(message);
         }

@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.redis.core.BoundHashOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -37,7 +38,7 @@ public class ValidationService {
     }
 
     public Object prepare(final Timeout timeout) throws Exception {
-        return Await.result(Patterns.ask(journalActor, new Ready.Request(), timeout), timeout.duration());
+        return Await.result(Patterns.ask(journalActor, new Ready.RequestBuilder(true).build(), timeout), timeout.duration());
     }
 
     /**
@@ -52,8 +53,8 @@ public class ValidationService {
             log.debug("validate({}) : page: {}", clasId, page);
             accounts = dbService.findAccountsByClas(clasId, new PageRequest(page, PAGE_SIZE));
             for (final Account account : accounts) {
-                val fast = balance(clasId, account.getExternalId());
-                final boolean compare = (fast != null) ? account.getBalance() == fast : false;
+                final Long fast = balance(clasId, account.getExternalId());
+                final boolean compare = (fast != null) && account.getBalance() == fast;
                 if (!compare) {
                     log.warn("account {}/{} is our of sync", clasId, account.getExternalId());
                 }
@@ -65,12 +66,11 @@ public class ValidationService {
     }
 
     private Long balance(final String clasId, final String accountId) {
-        val ops = redisTemplate.boundHashOps(clasId);
+        final BoundHashOperations<String, Object, Object> ops = redisTemplate.boundHashOps(clasId);
         val value = (String) ops.get(accountId);
         if (value != null) {
             return Long.parseLong(value);
         }
         return null;
     }
-
 }

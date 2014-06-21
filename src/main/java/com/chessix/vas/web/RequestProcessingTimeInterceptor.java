@@ -12,8 +12,7 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
  * 
  * @author Mark Wigmans
  *
- * @see http://www.journaldev.com/2676/spring-mvc-interceptors-example-
- *      handlerinterceptor-and-handlerinterceptoradapter
+ * @see <a href="http://www.journaldev.com/2676/spring-mvc-interceptors-example-handlerinterceptor-and-handlerinterceptoradapter">Interceptor example</a>
  */
 @Slf4j
 public class RequestProcessingTimeInterceptor extends HandlerInterceptorAdapter {
@@ -24,7 +23,7 @@ public class RequestProcessingTimeInterceptor extends HandlerInterceptorAdapter 
         val startTime = System.currentTimeMillis();
         log.debug("Request URL::{}:: Start", request.getRequestURL());
         request.setAttribute("startTime", startTime);
-        return true;
+        return super.preHandle(request, response, handler);
     }
 
     @Override
