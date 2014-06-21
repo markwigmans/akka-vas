@@ -18,6 +18,7 @@
 	<properties>
 		<akka.version>2.3.3</akka.version>
 		<org.jacoco.version>0.6.5.201403032054</org.jacoco.version>
+    <sonar.language>java</sonar.language>
 	</properties>
 
 	<dependencies>
