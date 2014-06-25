@@ -18,7 +18,7 @@ import lombok.RequiredArgsConstructor;
  */
 @SuppressWarnings("serial")
 @Entity
-@Table(name = "T_CLAS")
+@Table(name = "A_CLAS")
 @Data
 @NoArgsConstructor
 @RequiredArgsConstructor

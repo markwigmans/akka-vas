@@ -53,7 +53,7 @@ public class TransferController {
     @RequestMapping(value = "/{clasId}/{from}/{to}/{amount}", method = RequestMethod.POST)
     public DeferredResult<Object> transfer(@PathVariable final String clasId, @PathVariable final String from,
             @PathVariable final String to, @PathVariable final int amount) {
-        log.info("transfer({},{},{},{})", clasId, from, to, amount);
+        log.debug("transfer({},{},{},{})", clasId, from, to, amount);
         final ActorRef clas = clasService.getClas(clasId);
         final DeferredResult<Object> deferredResult = new DeferredResult<Object>();
         if (clas != null) {

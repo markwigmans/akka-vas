@@ -3,7 +3,6 @@ package com.chessix.vas.web;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Vector;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import lombok.val;
@@ -52,7 +51,6 @@ public class AccountController {
      */
     @Autowired
     public AccountController(final ActorSystem system, final ClasService clasService, final AccountService accountService) {
-        super();
         this.system = system;
         this.clasService = clasService;
         this.accountService = accountService;

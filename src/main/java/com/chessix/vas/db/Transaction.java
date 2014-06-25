@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 
 @SuppressWarnings("serial")
 @Entity
-@Table(name = "T_TRANSACTION")
+@Table(name = "A_TRANSACTION")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

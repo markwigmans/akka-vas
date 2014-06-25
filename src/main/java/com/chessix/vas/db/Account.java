@@ -21,7 +21,7 @@ import lombok.ToString;
  */
 @SuppressWarnings("serial")
 @Entity
-@Table(name = "T_ACCOUNT", uniqueConstraints = @UniqueConstraint(columnNames = { "CLAS_ID", "EXTERNAL_ID" }))
+@Table(name = "A_ACCOUNT", uniqueConstraints = @UniqueConstraint(columnNames = { "CLAS_ID", "EXTERNAL_ID" }))
 @Data
 @NoArgsConstructor
 @RequiredArgsConstructor
