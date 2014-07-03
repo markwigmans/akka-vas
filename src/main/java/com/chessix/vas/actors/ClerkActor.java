@@ -1,31 +1,24 @@
 package com.chessix.vas.actors;
 
-import java.util.Date;
-import java.util.List;
-
-import lombok.val;
-
-import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.dao.DataAccessException;
-import org.springframework.data.redis.core.RedisOperations;
-import org.springframework.data.redis.core.SessionCallback;
-import org.springframework.data.redis.core.StringRedisTemplate;
-
 import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.actor.UntypedActor;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
-
-import com.chessix.vas.actors.messages.Balance;
-import com.chessix.vas.actors.messages.Clean;
-import com.chessix.vas.actors.messages.Count;
+import com.chessix.vas.actors.messages.*;
 import com.chessix.vas.actors.messages.Count.Request;
-import com.chessix.vas.actors.messages.CreateAccount;
-import com.chessix.vas.actors.messages.JournalMessage;
-import com.chessix.vas.actors.messages.Transfer;
-import com.chessix.vas.actors.messages.Validate;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.redis.core.BoundHashOperations;
+import org.springframework.data.redis.core.RedisOperations;
+import org.springframework.data.redis.core.SessionCallback;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.util.Assert;
+
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
 
 /**
  * 
@@ -59,7 +52,7 @@ public class ClerkActor extends UntypedActor {
     public void onReceive(final Object message) throws Exception {
         log.debug("Received message: {}", message);
         if (message instanceof CreateAccount.Request) {
-            val request = (CreateAccount.Request) message;
+            final CreateAccount.Request request = (CreateAccount.Request) message;
             final String accountId = createAccount(request);
             if (StringUtils.isNoneBlank(accountId)) {
                 getSender().tell(new CreateAccount.ResponseBuilder(true).clasId(request.getClasId()).accountId(accountId).build(),
@@ -71,7 +64,7 @@ public class ClerkActor extends UntypedActor {
                                 .build(), getSelf());
             }
         } else if (message instanceof Transfer.Request) {
-            val request = (Transfer.Request) message;
+            final Transfer.Request request = (Transfer.Request) message;
             if (transfer(request)) {
                 getSender().tell(new Transfer.ResponseBuilder(true).message("Ok").build(), getSelf());
                 journalActor.tell(new JournalMessage.Transfer(clasId, request.getFrom(), request.getTo(), request.getAmount(),
@@ -80,18 +73,18 @@ public class ClerkActor extends UntypedActor {
                 getSender().tell(new Transfer.ResponseBuilder(false).message("Accounts do not exist").build(), getSelf());
             }
         } else if (message instanceof Balance.Request) {
-            val balance = balance((Balance.Request) message);
+            final Integer balance = balance((Balance.Request) message);
             getSender().tell(new Balance.ResponseBuilder(balance != null).amount(balance).build(), getSelf());
         } else if (message instanceof Clean.Request) {
-            val request = (Clean.Request) message;
+            final Clean.Request request = (Clean.Request) message;
             clean(request);
             getSender().tell(new Clean.ResponseBuilder(true).clasId(request.getClasId()).message("Ok").build(), getSelf());
         } else if (message instanceof Count.Request) {
-            val request = (Count.Request) message;
-            val count = count(request);
+            final Request request = (Request) message;
+            final Long count = count(request);
             getSender().tell(new Count.ResponseBuilder(count != null).clasId(request.getClasId()).count(count).build(), getSelf());
         } else if (message instanceof Validate.Request) {
-            val request = (Validate.Request) message;
+            final Validate.Request request = (Validate.Request) message;
             getSender().tell(new Validate.ResponseBuilder(validate()).clasId(request.getClasId()).build(), getSelf());
         } else {
             unhandled(message);
@@ -102,8 +95,8 @@ public class ClerkActor extends UntypedActor {
      * 
      */
     private boolean validate() {
-        val ops = redisTemplate.boundHashOps(clasId);
-        val values = ops.values();
+        final BoundHashOperations<String, Object, Object> ops = redisTemplate.boundHashOps(clasId);
+        final List<Object> values = ops.values();
         int total = 0;
         for (Object value : values) {
             total += Integer.parseInt((String) value);
@@ -115,14 +108,15 @@ public class ClerkActor extends UntypedActor {
      * 
      */
     private void clean(final Clean.Request request) {
-        val ops = redisTemplate.boundHashOps(clasId);
-        val keys = ops.keys();
+        Assert.isTrue(StringUtils.equals(clasId, request.getClasId()));
+        final BoundHashOperations<String, Object, Object> ops = redisTemplate.boundHashOps(clasId);
+        final Set<Object> keys = ops.keys();
 
         redisTemplate.executePipelined(new SessionCallback<List<Object>>() {
             @SuppressWarnings({ "rawtypes", "unchecked" })
             @Override
             public List<Object> execute(final RedisOperations operations) throws DataAccessException {
-                val ops = operations.boundHashOps(clasId);
+                final BoundHashOperations ops = operations.boundHashOps(clasId);
                 for (Object key : keys) {
                     ops.delete((String) key);
                 }
@@ -140,8 +134,8 @@ public class ClerkActor extends UntypedActor {
         } else {
             accountId = RandomStringUtils.randomNumeric(accountLength);
         }
-        val ops = redisTemplate.boundHashOps(clasId);
-        val inserted = ops.putIfAbsent(accountId, "0");
+        final BoundHashOperations<String, Object, Object> ops = redisTemplate.boundHashOps(clasId);
+        final Boolean inserted = ops.putIfAbsent(accountId, "0");
         if (inserted) {
             return accountId;
         } else {
@@ -151,8 +145,8 @@ public class ClerkActor extends UntypedActor {
 
     private Integer balance(final Balance.Request message) {
         log.debug("balance({})", message);
-        val ops = redisTemplate.boundHashOps(clasId);
-        val value = (String) ops.get(message.getAccountId());
+        final BoundHashOperations<String, Object, Object> ops = redisTemplate.boundHashOps(clasId);
+        final String value = (String) ops.get(message.getAccountId());
         if (value != null) {
             return Integer.parseInt(value);
         }
@@ -161,7 +155,7 @@ public class ClerkActor extends UntypedActor {
 
     private Long count(final Request message) {
         log.debug("balance({})", message);
-        val ops = redisTemplate.boundHashOps(clasId);
+        final BoundHashOperations<String, Object, Object> ops = redisTemplate.boundHashOps(clasId);
         return ops.size();
     }
 
@@ -169,7 +163,7 @@ public class ClerkActor extends UntypedActor {
         final String fromAccountId = message.getFrom();
         final String toAccountId = message.getTo();
 
-        val ops = redisTemplate.boundHashOps(clasId);
+        final BoundHashOperations<String, Object, Object> ops = redisTemplate.boundHashOps(clasId);
         if ((ops.get(fromAccountId) != null) && (ops.get(toAccountId) != null)) {
             ops.increment(fromAccountId, -message.getAmount());
             ops.increment(toAccountId, message.getAmount());

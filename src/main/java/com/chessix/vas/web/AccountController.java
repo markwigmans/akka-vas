@@ -1,34 +1,30 @@
 package com.chessix.vas.web;
 
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.context.request.async.DeferredResult;
-
-import scala.concurrent.Future;
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.dispatch.OnComplete;
 import akka.dispatch.OnFailure;
 import akka.dispatch.OnSuccess;
 import akka.pattern.Patterns;
-
 import com.chessix.vas.actors.messages.Balance;
 import com.chessix.vas.actors.messages.CreateAccount;
 import com.chessix.vas.dto.AccountCreated;
 import com.chessix.vas.dto.SaldoDTO;
 import com.chessix.vas.service.AccountService;
 import com.chessix.vas.service.ClasService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.async.DeferredResult;
+import scala.concurrent.Future;
+
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 
@@ -108,7 +104,7 @@ public class AccountController {
             final AtomicInteger resultsCounter = new AtomicInteger(0);
 
             for (int i = Integer.parseInt(start); i < Integer.parseInt(start) + countValue; i++) {
-                val accountId = Integer.toString(i);
+                final String accountId = Integer.toString(i);
                 log.debug("createAccounts() : create {}", accountId);
                 final Future<Object> future = Patterns.ask(clas, new CreateAccount.RequestBuilder(clasId).accountId(accountId)
                         .build(), timeout * countValue);
