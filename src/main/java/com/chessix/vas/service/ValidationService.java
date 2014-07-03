@@ -1,23 +1,19 @@
 package com.chessix.vas.service;
 
-import lombok.val;
+import akka.actor.ActorRef;
+import akka.pattern.Patterns;
+import akka.util.Timeout;
+import com.chessix.vas.actors.messages.Ready;
+import com.chessix.vas.db.Account;
+import com.chessix.vas.db.DBService;
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.redis.core.BoundHashOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
-
 import scala.concurrent.Await;
-import akka.actor.ActorRef;
-import akka.pattern.Patterns;
-import akka.util.Timeout;
-
-import com.chessix.vas.actors.messages.Ready;
-import com.chessix.vas.db.Account;
-import com.chessix.vas.db.DBService;
 
 @Service
 @Slf4j
@@ -67,7 +63,7 @@ public class ValidationService {
 
     private Long balance(final String clasId, final String accountId) {
         final BoundHashOperations<String, Object, Object> ops = redisTemplate.boundHashOps(clasId);
-        val value = (String) ops.get(accountId);
+        final String value = (String) ops.get(accountId);
         if (value != null) {
             return Long.parseLong(value);
         }

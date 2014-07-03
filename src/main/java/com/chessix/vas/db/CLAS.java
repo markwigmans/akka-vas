@@ -1,24 +1,15 @@
 package com.chessix.vas.db;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
+import lombok.*;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import javax.persistence.*;
 
 /**
  * A closed loop accounting system
  */
 @SuppressWarnings("serial")
 @Entity
-@Table(name = "A_CLAS")
+@Table(name = "T_CLAS")
 @Data
 @NoArgsConstructor
 @RequiredArgsConstructor
