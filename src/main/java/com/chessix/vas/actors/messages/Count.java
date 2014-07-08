@@ -8,9 +8,8 @@ import lombok.experimental.FieldDefaults;
 
 /**
  * Count the number of records
- * 
- * @author Mark Wigmans
  *
+ * @author Mark Wigmans
  */
 public class Count {
 

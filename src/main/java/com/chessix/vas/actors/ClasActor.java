@@ -1,22 +1,15 @@
 package com.chessix.vas.actors;
 
-import org.springframework.data.redis.core.StringRedisTemplate;
-
-import scala.concurrent.duration.Duration;
-import akka.actor.ActorRef;
-import akka.actor.OneForOneStrategy;
-import akka.actor.Props;
-import akka.actor.SupervisorStrategy;
+import akka.actor.*;
 import akka.actor.SupervisorStrategy.Directive;
-import akka.actor.UntypedActor;
 import akka.japi.Function;
 import akka.routing.DefaultResizer;
 import akka.routing.RoundRobinPool;
+import com.chessix.vas.service.ISpeedStorage;
+import scala.concurrent.duration.Duration;
 
 /**
- * 
  * @author Mark Wigmans
- *
  */
 public class ClasActor extends UntypedActor {
 
@@ -34,17 +27,17 @@ public class ClasActor extends UntypedActor {
      * Create Props for an actor of this type.
      */
     public static Props props(final String clasId, final int accountLength, final ActorRef journalActor,
-            final StringRedisTemplate redisTemplate) {
-        return Props.create(ClasActor.class, clasId, accountLength, redisTemplate, journalActor);
+                              final ISpeedStorage storage) {
+        return Props.create(ClasActor.class, clasId, accountLength, storage, journalActor);
     }
 
-    private ClasActor(final String clasId, final int accountLength, final StringRedisTemplate redisTemplate,
-            final ActorRef journalActor) {
+    private ClasActor(final String clasId, final int accountLength, final ISpeedStorage storage,
+                      final ActorRef journalActor) {
         super();
         final DefaultResizer resizer = new DefaultResizer(2, 15);
         this.router = getContext().actorOf(
                 new RoundRobinPool(5).withResizer(resizer).withSupervisorStrategy(strategy)
-                        .props(ClerkActor.props(clasId, accountLength, journalActor, redisTemplate)), "router");
+                        .props(ClerkActor.props(clasId, accountLength, journalActor, storage)), "router");
     }
 
     @Override

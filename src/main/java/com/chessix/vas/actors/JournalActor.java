@@ -4,7 +4,6 @@ import akka.actor.Props;
 import akka.actor.UntypedActor;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
-
 import com.chessix.vas.actors.messages.JournalMessage;
 import com.chessix.vas.actors.messages.JournalMessage.AccountCreated;
 import com.chessix.vas.actors.messages.JournalMessage.ClasCreated;
@@ -13,9 +12,7 @@ import com.chessix.vas.actors.messages.Ready;
 import com.chessix.vas.db.DBService;
 
 /**
- * 
  * @author Mark Wigmans
- *
  */
 public class JournalActor extends UntypedActor {
 

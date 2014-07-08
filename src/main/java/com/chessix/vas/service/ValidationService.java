@@ -1,23 +1,17 @@
 package com.chessix.vas.service;
 
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.redis.core.BoundHashOperations;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.stereotype.Service;
-
-import scala.concurrent.Await;
 import akka.actor.ActorRef;
 import akka.pattern.Patterns;
 import akka.util.Timeout;
-
 import com.chessix.vas.actors.messages.Ready;
 import com.chessix.vas.db.Account;
 import com.chessix.vas.db.DBService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Service;
+import scala.concurrent.Await;
 
 @Service
 @Slf4j
@@ -25,14 +19,14 @@ public class ValidationService {
 
     private final static int PAGE_SIZE = 1000;
 
-    private final StringRedisTemplate redisTemplate;
+    private final ISpeedStorage storage;
     private final DBService dbService;
     private final ActorRef journalActor;
 
     @Autowired
-    public ValidationService(final ClasService clasService, final StringRedisTemplate redisTemplate, final DBService dbService) {
+    public ValidationService(final ClasService clasService, final ISpeedStorage storage, final DBService dbService) {
         super();
-        this.redisTemplate = redisTemplate;
+        this.storage = storage;
         this.dbService = dbService;
         this.journalActor = clasService.getJournal();
     }
@@ -66,8 +60,7 @@ public class ValidationService {
     }
 
     private Long balance(final String clasId, final String accountId) {
-        final BoundHashOperations<String, Object, Object> ops = redisTemplate.boundHashOps(clasId);
-        val value = (String) ops.get(accountId);
+        final String value = storage.get(clasId, accountId);
         if (value != null) {
             return Long.parseLong(value);
         }

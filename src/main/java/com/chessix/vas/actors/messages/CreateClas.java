@@ -8,9 +8,8 @@ import lombok.experimental.FieldDefaults;
 
 /**
  * Create a new VAS CLAS
- * 
- * @author Mark Wigmans
  *
+ * @author Mark Wigmans
  */
 public class CreateClas {
 
@@ -36,7 +35,7 @@ public class CreateClas {
         String clasId;
         @Getter
         String message;
-        
+
         private Response(final ResponseBuilder responseBuilder) {
             this.successful = responseBuilder.successful;
             this.clasId = responseBuilder.clasId;
@@ -55,7 +54,7 @@ public class CreateClas {
             return new Request(this);
         }
     }
-    
+
     public static class ResponseBuilder implements Builder<Response> {
         private boolean successful;
         private String clasId;

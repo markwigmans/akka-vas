@@ -1,24 +1,21 @@
 package com.chessix.vas.actors;
 
+import akka.actor.ActorSystem;
+import akka.actor.Props;
+import akka.testkit.TestActorRef;
+import com.chessix.vas.actors.messages.CreateAccount;
+import com.chessix.vas.actors.messages.CreateAccount.Response;
+import com.chessix.vas.actors.messages.JournalMessage;
+import com.chessix.vas.db.DBService;
+import com.chessix.vas.service.ISpeedStorage;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.springframework.data.redis.core.BoundHashOperations;
-import org.springframework.data.redis.core.StringRedisTemplate;
-
 import scala.concurrent.Await;
 import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
-import akka.actor.ActorSystem;
-import akka.actor.Props;
-import akka.testkit.TestActorRef;
-
-import com.chessix.vas.actors.messages.CreateAccount;
-import com.chessix.vas.actors.messages.JournalMessage;
-import com.chessix.vas.actors.messages.CreateAccount.Response;
-import com.chessix.vas.db.DBService;
 
 public class ClerkActorTest {
 
@@ -42,19 +39,17 @@ public class ClerkActorTest {
         // Given
         final String clasId = "123";
         final String accountId = "456";
-        final StringRedisTemplate redisTemplate = Mockito.mock(StringRedisTemplate.class);
+        final ISpeedStorage storage = Mockito.mock(ISpeedStorage.class);
         final DBService dbService = Mockito.mock(DBService.class);
 
         final Props journalProps = JournalActor.props(dbService);
         final TestActorRef<ClerkActor> journalRef = TestActorRef.create(system, journalProps, "Journal");
 
-        final Props clerkProps = ClerkActor.props(clasId, 20, journalRef, redisTemplate);
+        final Props clerkProps = ClerkActor.props(clasId, 20, journalRef, storage);
         final TestActorRef<ClerkActor> cleckRef = TestActorRef.create(system, clerkProps, "clerk-1");
 
         // When
-        final BoundHashOperations ops = Mockito.mock(BoundHashOperations.class);
-        Mockito.when(redisTemplate.boundHashOps(Mockito.anyString())).thenReturn(ops);
-        Mockito.when(ops.putIfAbsent(Mockito.eq(accountId), Mockito.anyString())).thenReturn(Boolean.TRUE);
+        Mockito.when(storage.putIfAbsent(Mockito.eq(clasId),Mockito.eq(accountId), Mockito.anyString())).thenReturn(Boolean.TRUE);
 
         // Then
         final Future<Object> future = akka.pattern.Patterns.ask(cleckRef,

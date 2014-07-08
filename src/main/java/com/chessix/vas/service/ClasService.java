@@ -1,20 +1,7 @@
 package com.chessix.vas.service;
 
-import java.util.concurrent.ConcurrentMap;
-
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.stereotype.Service;
-
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
-
 import com.chessix.vas.actors.ClasActor;
 import com.chessix.vas.actors.JournalActor;
 import com.chessix.vas.actors.messages.CreateAccount;
@@ -22,13 +9,21 @@ import com.chessix.vas.actors.messages.JournalMessage;
 import com.chessix.vas.db.Account;
 import com.chessix.vas.db.DBService;
 import com.google.common.collect.Maps;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Service;
+
+import java.util.concurrent.ConcurrentMap;
 
 @Service
 @Slf4j
 public class ClasService {
 
     private final ActorSystem system;
-    private final StringRedisTemplate redisTemplate;
+    private final ISpeedStorage storage;
     private final DBService dbService;
     private final ActorRef journalActor;
     private final ConcurrentMap<String, ActorRef> clasManager;
@@ -44,10 +39,10 @@ public class ClasService {
      * Auto wired constructor
      */
     @Autowired
-    public ClasService(final ActorSystem system, final StringRedisTemplate redisTemplate, final DBService dbService) {
+    public ClasService(final ActorSystem system, final ISpeedStorage storage, final DBService dbService) {
         super();
         this.system = system;
-        this.redisTemplate = redisTemplate;
+        this.storage = storage;
         this.dbService = dbService;
         this.journalActor = system.actorOf(JournalActor.props(dbService), "Journalizer");
         this.clasManager = Maps.newConcurrentMap();
@@ -55,19 +50,17 @@ public class ClasService {
 
     /**
      * Create clas.
-     * 
-     * @param clasId
-     *            clas ID
+     *
+     * @param clasId clas ID
      * @return {@code true} if clas is created, {@code false} otherwise.
      */
     public boolean create(final String clasId) {
         log.debug("create({})", clasId);
-        val clasName = getClasId(clasId);
-        val ops = redisTemplate.boundHashOps(clasName);
-        if (getClas(clasName) == null || ops.size() == 0) {
+        final String clasName = getClasId(clasId);
+        if (getClas(clasName) == null || storage.size(clasName) == 0) {
             log.debug("create({}) : newly", clasId);
-            val clas = getClas(clasName) != null ? getClas(clasName) : system.actorOf(
-                    ClasActor.props(clasName, accountLength, journalActor, redisTemplate), clasActorName(clasName));
+            final ActorRef clas = getClas(clasName) != null ? getClas(clasName) : system.actorOf(
+                    ClasActor.props(clasName, accountLength, journalActor, storage), clasActorName(clasName));
             journalActor.tell(new JournalMessage.ClasCreated(clasName), ActorRef.noSender());
             clas.tell(new CreateAccount.RequestBuilder(clasId).accountId(NOSTRO).build(), ActorRef.noSender());
             clas.tell(new CreateAccount.RequestBuilder(clasId).accountId(OUTBOUND).build(), ActorRef.noSender());
@@ -113,17 +106,16 @@ public class ClasService {
 
     public ActorRef getClas(final String clasId) {
         log.debug("getClas({})", clasId);
-        val clasName = getClasId(clasId);
+        final String clasName = getClasId(clasId);
         if (!clasManager.containsKey(clasName)) {
             ActorRef clas = null;
             // make sure that only 1 thread creates the clas actor.
             synchronized (this.clasManager) {
                 if (!clasManager.containsKey(clasName)) {
-                    val ops = redisTemplate.boundHashOps(clasName);
-                    log.debug("getClas({}) : in clas manager, size: {}", clasId, ops.size());
-                    if (ops.size() > 0) {
+                    log.debug("getClas({}) : in clas manager, size: {}", clasId, storage.size(clasId));
+                    if (storage.size(clasName) > 0) {
                         log.debug("getClas({}) : create clas actor", clasId);
-                        clas = system.actorOf(ClasActor.props(clasName, accountLength, journalActor, redisTemplate),
+                        clas = system.actorOf(ClasActor.props(clasName, accountLength, journalActor, storage),
                                 clasActorName(clasName));
                         clasManager.putIfAbsent(clasName, clas);
                     } else {

@@ -14,6 +14,6 @@ public interface AccountRepository extends PagingAndSortingRepository<Account, L
 
     @Modifying
     @Transactional
-    @Query("delete from Account where clas = ?1")
+    @Query(value = "delete from com.chessix.vas.db.Account where clas = ?1")
     void deleteClasAccounts(final CLAS clas);
 }
