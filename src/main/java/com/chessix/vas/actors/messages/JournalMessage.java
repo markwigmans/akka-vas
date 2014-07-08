@@ -6,9 +6,7 @@ import java.util.Date;
 
 
 /**
- * 
  * @author Mark Wigmans
- *
  */
 public class JournalMessage {
 

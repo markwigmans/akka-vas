@@ -1,16 +1,14 @@
 package com.chessix.vas.web;
 
-import java.util.concurrent.TimeUnit;
-
+import akka.util.Timeout;
+import com.chessix.vas.service.ValidationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-
 import scala.concurrent.duration.Duration;
-import akka.util.Timeout;
 
-import com.chessix.vas.service.ValidationService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Test start/stop/report

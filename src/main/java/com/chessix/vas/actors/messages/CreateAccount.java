@@ -8,9 +8,8 @@ import lombok.experimental.FieldDefaults;
 
 /**
  * Create a new VAS account
- * 
- * @author Mark Wigmans
  *
+ * @author Mark Wigmans
  */
 public class CreateAccount {
 

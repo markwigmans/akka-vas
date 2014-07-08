@@ -8,9 +8,8 @@ import lombok.experimental.FieldDefaults;
 
 /**
  * Clean
- * 
- * @author Mark Wigmans
  *
+ * @author Mark Wigmans
  */
 public class Clean {
 
