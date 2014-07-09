@@ -51,8 +51,11 @@ public class ClasController {
         this.validationService = validationService;
     }
 
+    /**
+     * Create a class.
+     */
     @RequestMapping(value = "/{clasId}", method = RequestMethod.POST)
-    public synchronized ClasCreated createClas(@PathVariable final String clasId) {
+    public ClasCreated createClas(@PathVariable final String clasId) {
         log.debug("createClas({})", clasId);
         if (clasService.create(clasId)) {
             return new ClasCreated(clasId, true, "CLAS created");
@@ -61,6 +64,9 @@ public class ClasController {
         }
     }
 
+    /**
+     * Remove all accounts and transactions for the CLAS with the given id {@code clasId}.
+     */
     @RequestMapping(value = "/{clasId}/clean", method = RequestMethod.POST)
     public DeferredResult<Object> clean(@PathVariable final String clasId) {
         log.debug("clean({})", clasId);
@@ -91,6 +97,9 @@ public class ClasController {
         return deferredResult;
     }
 
+    /**
+     *  Count the number of records for the CLAS with id {@code classId}.
+     */
     @RequestMapping(value = "/{clasId}/count", method = RequestMethod.GET)
     public DeferredResult<Object> count(@PathVariable final String clasId) {
         log.debug("count({})", clasId);
@@ -118,8 +127,11 @@ public class ClasController {
         return deferredResult;
     }
 
-    @RequestMapping(value = "/{clasId}/validate/fast", method = RequestMethod.GET)
-    public DeferredResult<Object> fastValidate(@PathVariable final String clasId) {
+    /**
+     * Validate if for given {@code classId} the speed layer is in sync.
+     */
+    @RequestMapping(value = "/{clasId}/validate/speed", method = RequestMethod.GET)
+    public DeferredResult<Object> validateSpeedLayer(@PathVariable final String clasId) {
         log.debug("fastValidate({})", clasId);
 
         final DeferredResult<Object> deferredResult = new DeferredResult<Object>();
@@ -145,11 +157,17 @@ public class ClasController {
         return deferredResult;
     }
 
-    @RequestMapping(value = "/{clasId}/validate/data", method = RequestMethod.GET)
-    public Validate.Response dataValidate(@PathVariable final String clasId) {
+    /**
+     * Validate if for given {@code classId} the batch layer is in sync.
+     */
+    @RequestMapping(value = "/{clasId}/validate/batch", method = RequestMethod.GET)
+    public Validate.Response validateBatchLayer(@PathVariable final String clasId) {
         return new Validate.ResponseBuilder(clasService.validate(clasId)).clasId(clasId).build();
     }
 
+    /**
+     * Validate if for given {@code classId} the batch layer and speed layer are in sync.
+     */
     @RequestMapping(value = "/{clasId}/validate/insync", method = RequestMethod.GET)
     public Validate.Response validateInSync(@PathVariable final String clasId) {
         return new Validate.ResponseBuilder(validationService.validate(clasId)).clasId(clasId).build();

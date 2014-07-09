@@ -54,7 +54,7 @@ public class ClasService {
      * @param clasId clas ID
      * @return {@code true} if clas is created, {@code false} otherwise.
      */
-    public boolean create(final String clasId) {
+    public synchronized boolean create(final String clasId) {
         log.debug("create({})", clasId);
         final String clasName = getClasId(clasId);
         if (getClas(clasName) == null || storage.size(clasName) == 0) {

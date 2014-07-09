@@ -24,9 +24,9 @@ object Config {
   val merchants = 2
   
   // Number of users during the simulation
-  val users = 1000
+  val users = 20
   // Number of runs per user
-  val runs = 200
+  val runs = 10000
   // Ramp up of the simulation
   val ramp = 10
  

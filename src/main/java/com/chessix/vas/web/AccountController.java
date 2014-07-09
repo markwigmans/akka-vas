@@ -41,6 +41,7 @@ public class AccountController {
     private final AccountService accountService;
 
     private final long timeout = 30000L;
+    private static final int MAX_ACCOUNTS_IN_BATCH = 50000;
 
     /**
      * Auto wired constructor
@@ -94,8 +95,8 @@ public class AccountController {
         final DeferredResult<Object> deferredResult = new DeferredResult<Object>();
         final int countValue = Integer.parseInt(count);
 
-        if (countValue > 50000) {
-            deferredResult.setErrorResult(String.format("count %s is to large (> 50.000)", count));
+        if (countValue > MAX_ACCOUNTS_IN_BATCH) {
+            deferredResult.setErrorResult(String.format("count %s is to large (> %d)", count, MAX_ACCOUNTS_IN_BATCH));
             return deferredResult;
         }
 
