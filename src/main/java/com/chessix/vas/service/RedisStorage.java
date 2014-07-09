@@ -2,7 +2,6 @@ package com.chessix.vas.service;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.BoundHashOperations;
@@ -12,7 +11,6 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Set;
 
 /**
  * Redis storage version of the {@code ISpeedStorage} interface.
@@ -37,7 +35,7 @@ public class RedisStorage implements ISpeedStorage {
     }
 
     @Override
-    public List<String> values(final String clasId) {
+    public List<String> accountValues(final String clasId) {
         final BoundHashOperations<String, Object, Object> ops = redisTemplate.boundHashOps(clasId);
         final List<Object> values = ops.values();
         return Lists.transform(values, new Function<Object, String>() {
@@ -50,17 +48,16 @@ public class RedisStorage implements ISpeedStorage {
     }
 
     @Override
-    public Set<String> keys(final String clasId) {
+    public List<String> accountIds(final String clasId) {
         final BoundHashOperations<String, Object, Object> ops = redisTemplate.boundHashOps(clasId);
-        final List<Object> values = Lists.newArrayList(ops.keys());
-        final List<String> transform = Lists.transform(values, new Function<Object, String>() {
+        final List<Object> values = Lists.newLinkedList(ops.keys());
+        return Lists.transform(values, new Function<Object, String>() {
 
             @Override
             public String apply(Object input) {
                 return (String) input;
             }
         });
-        return Sets.newHashSet(transform);
     }
 
     @Override
@@ -70,15 +67,16 @@ public class RedisStorage implements ISpeedStorage {
     }
 
     @Override
-    public Long increment(final String clasId, final String accountId, final long value) {
+    public void transfer(String clasId, String fromAccountId, String toAccountId, int value) {
         final BoundHashOperations<String, Object, Object> ops = redisTemplate.boundHashOps(clasId);
-        return ops.increment(accountId, value);
+        ops.increment(fromAccountId, -value);
+        ops.increment(toAccountId, value);
     }
 
     @Override
-    public Boolean putIfAbsent(final String clasId, final String accountId, final String value) {
+    public boolean create(final String clasId, final String accountId) {
         final BoundHashOperations<String, Object, Object> ops = redisTemplate.boundHashOps(clasId);
-        return ops.putIfAbsent(accountId, value);
+        return ops.putIfAbsent(accountId, "0");
     }
 
     @Override
@@ -87,7 +85,7 @@ public class RedisStorage implements ISpeedStorage {
             @Override
             public List<Object> execute(final RedisOperations operations) throws DataAccessException {
                 final BoundHashOperations<String, Object, Object> ops = redisTemplate.boundHashOps(clasId);
-                for(final String accountId : accountIds) {
+                for (final String accountId : accountIds) {
                     ops.delete(accountId);
                 }
                 return null;

@@ -25,9 +25,7 @@ import scala.concurrent.duration.Duration;
 import java.util.concurrent.TimeUnit;
 
 /**
- * 
  * @author Mark Wigmans
- * 
  */
 @RestController
 @RequestMapping(value = "/clas")

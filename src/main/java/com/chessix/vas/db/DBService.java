@@ -12,9 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Service to do the actual RDBMS actions.
- * 
- * @author Mark Wigmans
  *
+ * @author Mark Wigmans
  */
 @Service
 @Transactional
@@ -26,7 +25,7 @@ public class DBService {
 
     @Autowired
     public DBService(final CLASRepository clasRepository, final AccountRepository accountRepository,
-            final TransactionRepository transactionRepository) {
+                     final TransactionRepository transactionRepository) {
         super();
         this.clasRepository = clasRepository;
         this.accountRepository = accountRepository;
@@ -64,9 +63,20 @@ public class DBService {
     }
 
     @Transactional(readOnly = true)
-    public Page<Account> findAccountsByClas(String clasId, PageRequest pageRequest) {
+    public Page<Account> findAccountsByClas(final String clasId, final PageRequest pageRequest) {
         final CLAS clas = clasRepository.findByExternalId(clasId);
         return accountRepository.findByClas(clas, pageRequest);
     }
 
+    @Transactional(readOnly = true)
+    public Account findAccount(final String clasId, final String accountId) {
+        final CLAS clas = clasRepository.findByExternalId(clasId);
+        return accountRepository.findByClasAndExternalId(clas, accountId);
+    }
+
+    @Transactional(readOnly = true)
+    public Long count(final String clasId) {
+        final CLAS clas = clasRepository.findByExternalId(clasId);
+        return accountRepository.countByClas(clas);
+    }
 }

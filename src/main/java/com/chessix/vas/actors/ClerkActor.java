@@ -14,7 +14,6 @@ import org.springframework.util.Assert;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 /**
  * @author Mark Wigmans
@@ -89,11 +88,12 @@ public class ClerkActor extends UntypedActor {
      *
      */
     private boolean validate() {
-        final List<String> values = storage.values(clasId);
+        final List<String> values = storage.accountValues(clasId);
         int total = 0;
         for (String value : values) {
             total += Integer.parseInt(value);
         }
+        // check if total is in balance
         return total == 0;
     }
 
@@ -102,8 +102,8 @@ public class ClerkActor extends UntypedActor {
      */
     private void clean(final Clean.Request request) {
         Assert.isTrue(StringUtils.equals(clasId, request.getClasId()));
-        final Set<String> keys = storage.keys(clasId);
-        storage.delete(clasId, keys.toArray(new String[0]));
+        final List<String> accountIds = storage.accountIds(clasId);
+        storage.delete(clasId, accountIds.toArray(new String[accountIds.size()]));
     }
 
     private String createAccount(final CreateAccount.Request message) {
@@ -114,7 +114,7 @@ public class ClerkActor extends UntypedActor {
         } else {
             accountId = RandomStringUtils.randomNumeric(accountLength);
         }
-        final Boolean inserted = storage.putIfAbsent(clasId, accountId, "0");
+        final Boolean inserted = storage.create(clasId, accountId);
         if (inserted) {
             return accountId;
         } else {
@@ -141,8 +141,7 @@ public class ClerkActor extends UntypedActor {
         final String toAccountId = message.getTo();
 
         if ((storage.get(clasId, fromAccountId) != null) && (storage.get(clasId, toAccountId) != null)) {
-            storage.increment(clasId, fromAccountId, -message.getAmount());
-            storage.increment(clasId, toAccountId, message.getAmount());
+            storage.transfer(clasId, fromAccountId, toAccountId, message.getAmount());
             return true;
         } else {
             return false;

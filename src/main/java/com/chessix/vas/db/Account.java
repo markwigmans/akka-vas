@@ -10,11 +10,11 @@ import javax.persistence.*;
  */
 @SuppressWarnings("serial")
 @Entity
-@Table(name = "T_ACCOUNT", uniqueConstraints = @UniqueConstraint(columnNames = { "CLAS_ID", "EXTERNAL_ID" }))
+@Table(name = "T_ACCOUNT", uniqueConstraints = @UniqueConstraint(columnNames = {"CLAS_ID", "EXTERNAL_ID"}))
 @Data
 @NoArgsConstructor
 @RequiredArgsConstructor
-@EqualsAndHashCode(callSuper = true, exclude = { "clas" })
+@EqualsAndHashCode(callSuper = true, exclude = {"clas"})
 @ToString(exclude = "clas")
 public class Account extends BaseModel {
 

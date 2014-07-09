@@ -49,7 +49,7 @@ public class ClerkActorTest {
         final TestActorRef<ClerkActor> cleckRef = TestActorRef.create(system, clerkProps, "clerk-1");
 
         // When
-        Mockito.when(storage.putIfAbsent(Mockito.eq(clasId),Mockito.eq(accountId), Mockito.anyString())).thenReturn(Boolean.TRUE);
+        Mockito.when(storage.create(Mockito.eq(clasId),Mockito.eq(accountId))).thenReturn(Boolean.TRUE);
 
         // Then
         final Future<Object> future = akka.pattern.Patterns.ask(cleckRef,

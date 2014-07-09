@@ -9,7 +9,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 public interface AccountRepository extends PagingAndSortingRepository<Account, Long> {
 
+    Long countByClas(CLAS clas);
+
     Page<Account> findByClas(CLAS clas, Pageable pageable);
+
     Account findByClasAndExternalId(final CLAS clas, final String externalId);
 
     @Modifying

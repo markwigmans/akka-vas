@@ -47,8 +47,8 @@ public class ValidationService {
             log.debug("validate({}) : page: {}", clasId, page);
             accounts = dbService.findAccountsByClas(clasId, new PageRequest(page, PAGE_SIZE));
             for (final Account account : accounts) {
-                final Long fast = balance(clasId, account.getExternalId());
-                final boolean compare = (fast != null) && account.getBalance() == fast;
+                final Long speed = balance(clasId, account.getExternalId());
+                final boolean compare = (speed != null) && account.getBalance() == speed;
                 if (!compare) {
                     log.warn("account {}/{} is our of sync", clasId, account.getExternalId());
                 }
