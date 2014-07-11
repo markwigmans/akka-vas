@@ -2,10 +2,7 @@ package com.chessix.vas.service;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
-import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.BoundHashOperations;
-import org.springframework.data.redis.core.RedisOperations;
-import org.springframework.data.redis.core.SessionCallback;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.util.List;
@@ -76,17 +73,6 @@ public class RedisStorage implements ISpeedStorage {
 
     @Override
     public void delete(final String clasId) {
-        final List<Object> accountIds = Lists.newLinkedList(redisTemplate.boundHashOps(clasId).keys());
-
-        redisTemplate.executePipelined(new SessionCallback<List<Object>>() {
-            @Override
-            public List<Object> execute(final RedisOperations operations) throws DataAccessException {
-                final BoundHashOperations<String, Object, Object> ops = redisTemplate.boundHashOps(clasId);
-                for (final Object accountId : accountIds) {
-                    ops.delete(accountId);
-                }
-                return null;
-            }
-        });
+        redisTemplate.delete(clasId);
     }
 }
