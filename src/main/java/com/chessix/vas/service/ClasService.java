@@ -3,8 +3,7 @@ package com.chessix.vas.service;
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import com.chessix.vas.actors.ClasActor;
-import com.chessix.vas.actors.JournalActor;
-import com.chessix.vas.actors.messages.CreateAccount;
+import com.chessix.vas.actors.messages.CreateClas;
 import com.chessix.vas.actors.messages.JournalMessage;
 import com.chessix.vas.db.Account;
 import com.chessix.vas.db.DBService;
@@ -15,36 +14,36 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import scala.concurrent.Await;
+import scala.concurrent.duration.Duration;
 
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
+
+import static akka.pattern.Patterns.ask;
 
 @Service
 @Slf4j
 public class ClasService {
 
+    private final static int PAGE_SIZE = 1000;
     private final ActorSystem system;
     private final ISpeedStorage storage;
     private final DBService dbService;
     private final ActorRef journalActor;
     private final ConcurrentMap<String, ActorRef> clasManager;
-
     private final int accountLength = 20;
-    private final static int PAGE_SIZE = 1000;
-
-    public static final String NOSTRO = "nostro";
-    public static final String OUTBOUND = "outbound";
-    public static final String EXCEPTION = "exception";
 
     /**
      * Auto wired constructor
      */
     @Autowired
-    public ClasService(final ActorSystem system, final ISpeedStorage storage, final DBService dbService) {
+    public ClasService(final ActorSystem system, final ISpeedStorage storage, final DBService dbService, final ActorRef journalActor) {
         super();
         this.system = system;
         this.storage = storage;
         this.dbService = dbService;
-        this.journalActor = system.actorOf(JournalActor.props(dbService), "Journalizer");
+        this.journalActor = journalActor;
         this.clasManager = Maps.newConcurrentMap();
     }
 
@@ -59,15 +58,20 @@ public class ClasService {
         final String clasName = getClasId(clasId);
         if (getClas(clasName) == null || storage.size(clasName) == 0) {
             log.debug("create({}) : newly", clasId);
+            journalActor.tell(new JournalMessage.ClasCreated(clasName), ActorRef.noSender());
+
             final ActorRef clas = getClas(clasName) != null ? getClas(clasName) : system.actorOf(
                     ClasActor.props(clasName, accountLength, journalActor, storage), clasActorName(clasName));
-            journalActor.tell(new JournalMessage.ClasCreated(clasName), ActorRef.noSender());
-            clas.tell(new CreateAccount.RequestBuilder(clasId).accountId(NOSTRO).build(), ActorRef.noSender());
-            clas.tell(new CreateAccount.RequestBuilder(clasId).accountId(OUTBOUND).build(), ActorRef.noSender());
-            clas.tell(new CreateAccount.RequestBuilder(clasId).accountId(EXCEPTION).build(), ActorRef.noSender());
-            log.info("CLAS created: {}", clas);
-            clasManager.putIfAbsent(clasName, clas);
-            return true;
+            final Duration timeout = Duration.create(1, TimeUnit.SECONDS);
+            try {
+                Await.result(ask(clas, new CreateClas.RequestBuilder(clasId).build(), timeout.toMillis()), timeout);
+                log.info("CLAS created: {}", clas);
+                clasManager.putIfAbsent(clasName, clas);
+                return true;
+            } catch (Exception e) {
+                log.error("Exception", e);
+                return false;
+            }
         }
         // clas is already created
         log.debug("create({}) : already there", clasId);
@@ -112,15 +116,12 @@ public class ClasService {
             // make sure that only 1 thread creates the clas actor.
             synchronized (this.clasManager) {
                 if (!clasManager.containsKey(clasName)) {
-                    log.debug("getClas({}) : in clas manager, size: {}", clasId, storage.size(clasId));
-                    if (storage.size(clasName) > 0) {
-                        log.debug("getClas({}) : create clas actor", clasId);
-                        clas = system.actorOf(ClasActor.props(clasName, accountLength, journalActor, storage),
-                                clasActorName(clasName));
-                        clasManager.putIfAbsent(clasName, clas);
-                    } else {
-                        log.debug("getClas({}) : return null", clasId);
-                    }
+                    log.debug("getClas({}) : create clas actor", clasId);
+                    clas = system.actorOf(ClasActor.props(clasName, accountLength, journalActor, storage),
+                            clasActorName(clasName));
+                    clasManager.putIfAbsent(clasName, clas);
+                } else {
+                    return clasManager.get(clasName);
                 }
             }
             return clas;
