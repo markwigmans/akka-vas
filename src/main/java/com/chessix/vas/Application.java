@@ -1,6 +1,10 @@
 package com.chessix.vas;
 
+import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
+import com.chessix.vas.actors.JournalActor;
+import com.chessix.vas.actors.NullJournalActor;
+import com.chessix.vas.db.DBService;
 import com.chessix.vas.service.ISpeedStorage;
 import com.chessix.vas.service.RdbmsStorage;
 import com.chessix.vas.service.RedisStorage;
@@ -12,6 +16,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
@@ -23,9 +28,11 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 public class Application {
 
     @Autowired
-    private RedisStorage redisStorage;
+    private StringRedisTemplate redisTemplate;
     @Autowired
-    private RdbmsStorage rdbmsStorage;
+    private DBService dbService;
+    @Autowired
+    private ActorSystem actorSystem;
 
     @Value("${vas.async:true}")
     private boolean async;
@@ -57,13 +64,24 @@ public class Application {
     }
 
     @Bean
-    ISpeedStorage storage() {
+    ISpeedStorage speedStorage() {
         if (async) {
             log.debug("Redis storage");
-            return redisStorage;
+            return new RedisStorage(redisTemplate);
         } else {
             log.debug("RDBMS storage");
-            return rdbmsStorage;
+            return new RdbmsStorage(dbService);
+        }
+    }
+
+    @Bean
+    ActorRef batchStorage() {
+        if (async) {
+            log.debug("RDBMS journaling");
+            return actorSystem.actorOf(JournalActor.props(dbService), "Journalizer");
+        } else {
+            log.debug("Dummy journaling");
+            return actorSystem.actorOf(NullJournalActor.props(), "Journalizer");
         }
     }
 }

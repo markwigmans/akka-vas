@@ -4,6 +4,7 @@ import com.chessix.vas.actors.messages.JournalMessage.AccountCreated;
 import com.chessix.vas.actors.messages.JournalMessage.ClasCreated;
 import com.chessix.vas.actors.messages.JournalMessage.Clean;
 import com.chessix.vas.actors.messages.JournalMessage.Transfer;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 @Transactional
+@Slf4j
 public class DBService {
 
     private final CLASRepository clasRepository;
@@ -33,15 +35,18 @@ public class DBService {
     }
 
     public void createClas(final ClasCreated message) {
+        log.debug("createClas({})", message);
         clasRepository.save(new CLAS(message.getClasId()));
     }
 
     public void createAccount(final AccountCreated message) {
+        log.debug("createAccount({})", message);
         final CLAS clas = clasRepository.findByExternalId(message.getClasId());
         accountRepository.save(new Account(clas, message.getAccountId()));
     }
 
     public void createTransfer(final Transfer message) {
+        log.debug("createTransfer({})", message);
         final CLAS clas = clasRepository.findByExternalId(message.getClasId());
         final Account from = accountRepository.findByClasAndExternalId(clas, message.getFromAccountId());
         final Account to = accountRepository.findByClasAndExternalId(clas, message.getToAccountId());
@@ -53,6 +58,7 @@ public class DBService {
     }
 
     public void clean(final Clean message) {
+        log.debug("clean({})", message);
         final CLAS clas = clasRepository.findByExternalId(message.getClasId());
         if (clas != null) {
             // there is data

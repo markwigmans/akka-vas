@@ -44,7 +44,11 @@ public class ClerkActor extends UntypedActor {
     @Override
     public void onReceive(final Object message) throws Exception {
         log.debug("Received message: {}", message);
-        if (message instanceof CreateAccount.Request) {
+        if (message instanceof CreateClas.Request) {
+            final CreateClas.Request request = (CreateClas.Request) message;
+            createClas(request);
+            getSender().tell(new CreateClas.ResponseBuilder(true).build(), getSender());
+        } else  if (message instanceof CreateAccount.Request) {
             final CreateAccount.Request request = (CreateAccount.Request) message;
             final String accountId = createAccount(request);
             if (StringUtils.isNoneBlank(accountId)) {
@@ -101,9 +105,15 @@ public class ClerkActor extends UntypedActor {
      *
      */
     private void clean(final Clean.Request request) {
+        log.debug("clean({})", request);
         Assert.isTrue(StringUtils.equals(clasId, request.getClasId()));
         final List<String> accountIds = storage.accountIds(clasId);
         storage.delete(clasId, accountIds.toArray(new String[accountIds.size()]));
+    }
+
+    private void createClas(final CreateClas.Request request) {
+        log.debug("createClas({})", request);
+        storage.create(clasId);
     }
 
     private String createAccount(final CreateAccount.Request message) {

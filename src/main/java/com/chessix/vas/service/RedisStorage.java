@@ -2,13 +2,11 @@ package com.chessix.vas.service;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.BoundHashOperations;
 import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.SessionCallback;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 
@@ -17,12 +15,10 @@ import java.util.List;
  *
  * @author Mark Wigmans
  */
-@Component
 public class RedisStorage implements ISpeedStorage {
 
     private final StringRedisTemplate redisTemplate;
 
-    @Autowired
     public RedisStorage(final StringRedisTemplate redisTemplate) {
         super();
         this.redisTemplate = redisTemplate;
@@ -71,6 +67,12 @@ public class RedisStorage implements ISpeedStorage {
         final BoundHashOperations<String, Object, Object> ops = redisTemplate.boundHashOps(clasId);
         ops.increment(fromAccountId, -value);
         ops.increment(toAccountId, value);
+    }
+
+    @Override
+    public boolean create(final String clasId) {
+        // CLAS is automatically created if account is added
+        return true;
     }
 
     @Override

@@ -3,7 +3,7 @@ package com.chessix.vas.service;
 import java.util.List;
 
 /**
- * @author Mark Wigmans
+ * Interface to the speed layer of the lambda architecture
  */
 public interface ISpeedStorage {
     /**
@@ -29,6 +29,13 @@ public interface ISpeedStorage {
      * @param value         value to be transferred.
      */
     void transfer(String clasId, String fromAccountId, String toAccountId, int value);
+
+    /**
+     * Create CLAS
+     *
+     * @param clasId  ID of CLAS
+     */
+    boolean create(String clasId);
 
     /**
      * Create account

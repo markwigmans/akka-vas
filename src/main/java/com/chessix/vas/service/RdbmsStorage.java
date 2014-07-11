@@ -5,10 +5,8 @@ import com.chessix.vas.db.Account;
 import com.chessix.vas.db.DBService;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.stereotype.Component;
 
 import java.util.Date;
 import java.util.List;
@@ -16,14 +14,12 @@ import java.util.List;
 /**
  * Created by Mark Wigmans on 9-7-2014.
  */
-@Component
 public class RdbmsStorage implements ISpeedStorage {
 
     private final static int PAGE_SIZE = 1000;
 
     private final DBService dbService;
 
-    @Autowired
     public RdbmsStorage(final DBService dbService) {
         super();
         this.dbService = dbService;
@@ -88,6 +84,12 @@ public class RdbmsStorage implements ISpeedStorage {
     @Override
     public void transfer(final String clasId, final String fromAccountId, final String toAccountId, final int value) {
         dbService.createTransfer(new JournalMessage.Transfer(clasId, fromAccountId, toAccountId, value, new Date()));
+    }
+
+    @Override
+    public boolean create(final String clasId) {
+        dbService.createClas(new JournalMessage.ClasCreated(clasId));
+        return true;
     }
 
     @Override
