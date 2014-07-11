@@ -1,7 +1,6 @@
 package com.chessix.vas.actors.messages;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
-
 import org.junit.Test;
 
 public class JournalMessageTest {

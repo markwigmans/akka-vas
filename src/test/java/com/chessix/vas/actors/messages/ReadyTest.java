@@ -1,7 +1,6 @@
 package com.chessix.vas.actors.messages;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
-
 import org.junit.Test;
 
 public class ReadyTest {
@@ -11,7 +10,7 @@ public class ReadyTest {
     }
 
     @Test
-    public void equalsContractReadyResponset() {
+    public void equalsContractReadyResponse() {
         EqualsVerifier.forClass(Ready.Response.class).verify();
     }
 }

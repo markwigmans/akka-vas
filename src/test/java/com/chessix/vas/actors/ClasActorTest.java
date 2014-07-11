@@ -1,13 +1,12 @@
 package com.chessix.vas.actors;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.mockito.Mockito;
-
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
 import akka.testkit.TestActorRef;
+import org.junit.Assert;
+import org.junit.Test;
+import org.mockito.Mockito;
 
 public class ClasActorTest {
 

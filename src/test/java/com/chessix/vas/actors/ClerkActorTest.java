@@ -46,13 +46,13 @@ public class ClerkActorTest {
         final TestActorRef<ClerkActor> journalRef = TestActorRef.create(system, journalProps, "Journal");
 
         final Props clerkProps = ClerkActor.props(clasId, 20, journalRef, storage);
-        final TestActorRef<ClerkActor> cleckRef = TestActorRef.create(system, clerkProps, "clerk-1");
+        final TestActorRef<ClerkActor> clerkRef = TestActorRef.create(system, clerkProps, "clerk-1");
 
         // When
         Mockito.when(storage.create(Mockito.eq(clasId),Mockito.eq(accountId))).thenReturn(Boolean.TRUE);
 
         // Then
-        final Future<Object> future = akka.pattern.Patterns.ask(cleckRef,
+        final Future<Object> future = akka.pattern.Patterns.ask(clerkRef,
                 new CreateAccount.RequestBuilder(clasId).accountId(accountId).build(), 1000);
         final CreateAccount.Response response = (Response) Await.result(future, Duration.Zero());
         Assert.assertEquals(accountId, response.getAccountId());

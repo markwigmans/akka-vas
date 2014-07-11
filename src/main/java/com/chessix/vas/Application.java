@@ -57,10 +57,10 @@ public class Application {
     @Bean
     ISpeedStorage speedStorage() {
         if (async) {
-            log.debug("Redis storage");
+            log.debug("Redis speed storage");
             return new RedisStorage(redisTemplate);
         } else {
-            log.debug("RDBMS storage");
+            log.debug("RDBMS speed storage");
             return new RdbmsStorage(dbService);
         }
     }
@@ -68,10 +68,10 @@ public class Application {
     @Bean
     ActorRef batchStorage() {
         if (async) {
-            log.debug("RDBMS journaling");
+            log.debug("RDBMS batch storage");
             return actorSystem.actorOf(JournalActor.props(dbService), "Journalizer");
         } else {
-            log.debug("Dummy journaling");
+            log.debug("Dummy batch storage");
             return actorSystem.actorOf(NullJournalActor.props(), "Dummy-Journalizer");
         }
     }
