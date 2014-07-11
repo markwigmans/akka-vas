@@ -13,8 +13,6 @@ import scala.concurrent.duration.Duration;
  */
 public class ClasActor extends UntypedActor {
 
-    private final ActorRef router;
-
     private static final SupervisorStrategy strategy = new OneForOneStrategy(10, Duration.create("1 minute"),
             new Function<Throwable, Directive>() {
                 @Override
@@ -22,14 +20,7 @@ public class ClasActor extends UntypedActor {
                     return SupervisorStrategy.restart();
                 }
             });
-
-    /**
-     * Create Props for an actor of this type.
-     */
-    public static Props props(final String clasId, final int accountLength, final ActorRef journalActor,
-                              final ISpeedStorage storage) {
-        return Props.create(ClasActor.class, clasId, accountLength, storage, journalActor);
-    }
+    private final ActorRef router;
 
     private ClasActor(final String clasId, final int accountLength, final ISpeedStorage storage,
                       final ActorRef journalActor) {
@@ -38,6 +29,14 @@ public class ClasActor extends UntypedActor {
         this.router = getContext().actorOf(
                 new RoundRobinPool(5).withResizer(resizer).withSupervisorStrategy(strategy)
                         .props(ClerkActor.props(clasId, accountLength, journalActor, storage)), "router");
+    }
+
+    /**
+     * Create Props for an actor of this type.
+     */
+    public static Props props(final String clasId, final int accountLength, final ActorRef journalActor,
+                              final ISpeedStorage storage) {
+        return Props.create(ClasActor.class, clasId, accountLength, storage, journalActor);
     }
 
     @Override

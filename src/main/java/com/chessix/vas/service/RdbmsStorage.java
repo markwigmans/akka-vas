@@ -26,47 +26,26 @@ public class RdbmsStorage implements ISpeedStorage {
     }
 
     @Override
-    public String get(final String clasId, final String accountId) {
+    public Integer get(final String clasId, final String accountId) {
         final Account account = dbService.findAccount(clasId, accountId);
         if (account != null) {
-            return Long.toString(account.getBalance());
+            return account.getBalance();
         }
         return null;
     }
 
     @Override
-    public List<String> accountValues(final String clasId) {
-        final List<String> result = Lists.newLinkedList();
+    public List<Integer> accountValues(final String clasId) {
+        final List<Integer> result = Lists.newLinkedList();
         int page = 0;
         Page<Account> accounts;
         do {
             accounts = dbService.findAccountsByClas(clasId, new PageRequest(page, PAGE_SIZE));
-            result.addAll(Lists.transform(accounts.getContent(), new Function<Account, String>() {
+            result.addAll(Lists.transform(accounts.getContent(), new Function<Account, Integer>() {
 
                 @Override
-                public String apply(Account input) {
-                    return Long.toString(input.getBalance());
-                }
-            }));
-
-            page += 1;
-        } while (accounts.hasNext());
-
-        return result;
-    }
-
-    @Override
-    public List<String> accountIds(final String clasId) {
-        final List<String> result = Lists.newLinkedList();
-        int page = 0;
-        Page<Account> accounts;
-        do {
-            accounts = dbService.findAccountsByClas(clasId, new PageRequest(page, PAGE_SIZE));
-            result.addAll(Lists.transform(accounts.getContent(), new Function<Account, String>() {
-
-                @Override
-                public String apply(Account input) {
-                    return input.getExternalId();
+                public Integer apply(Account input) {
+                    return input.getBalance();
                 }
             }));
 
@@ -99,8 +78,7 @@ public class RdbmsStorage implements ISpeedStorage {
     }
 
     @Override
-    public void delete(final String clasId, final String... accountIds) {
-        // ignore the account ID's classes are always cleaned entirely.
+    public void delete(final String clasId) {
         dbService.clean(new JournalMessage.Clean(clasId));
     }
 }

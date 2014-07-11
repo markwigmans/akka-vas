@@ -28,5 +28,6 @@ public class Account extends BaseModel {
     private String externalId;
 
     @Column(name = "BALANCE", nullable = false)
-    private long balance = 0L;
+    @NonNull
+    private Integer balance;
 }

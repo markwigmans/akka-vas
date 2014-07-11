@@ -20,13 +20,13 @@ public class JournalActor extends UntypedActor {
 
     private final DBService service;
 
-    public static Props props(final DBService service) {
-        return Props.create(JournalActor.class, service);
-    }
-
     private JournalActor(final DBService service) {
         super();
         this.service = service;
+    }
+
+    public static Props props(final DBService service) {
+        return Props.create(JournalActor.class, service);
     }
 
     @Override

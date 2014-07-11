@@ -27,11 +27,6 @@ public class ClerkActor extends UntypedActor {
     private final ActorRef journalActor;
     private final ISpeedStorage storage;
 
-    public static Props props(final String clasId, final int accountLength, final ActorRef journalActor,
-                              final ISpeedStorage storage) {
-        return Props.create(ClerkActor.class, clasId, accountLength, journalActor, storage);
-    }
-
     private ClerkActor(final String clasId, final int accountLength, final ActorRef journalActor,
                        final ISpeedStorage storage) {
         super();
@@ -41,6 +36,11 @@ public class ClerkActor extends UntypedActor {
         this.storage = storage;
     }
 
+    public static Props props(final String clasId, final int accountLength, final ActorRef journalActor,
+                              final ISpeedStorage storage) {
+        return Props.create(ClerkActor.class, clasId, accountLength, journalActor, storage);
+    }
+
     @Override
     public void onReceive(final Object message) throws Exception {
         log.debug("Received message: {}", message);
@@ -48,7 +48,7 @@ public class ClerkActor extends UntypedActor {
             final CreateClas.Request request = (CreateClas.Request) message;
             createClas(request);
             getSender().tell(new CreateClas.ResponseBuilder(true).build(), getSender());
-        } else  if (message instanceof CreateAccount.Request) {
+        } else if (message instanceof CreateAccount.Request) {
             final CreateAccount.Request request = (CreateAccount.Request) message;
             final String accountId = createAccount(request);
             if (StringUtils.isNoneBlank(accountId)) {
@@ -92,10 +92,10 @@ public class ClerkActor extends UntypedActor {
      *
      */
     private boolean validate() {
-        final List<String> values = storage.accountValues(clasId);
+        final List<Integer> values = storage.accountValues(clasId);
         int total = 0;
-        for (String value : values) {
-            total += Integer.parseInt(value);
+        for (final Integer value : values) {
+            total += value;
         }
         // check if total is in balance
         return total == 0;
@@ -107,8 +107,7 @@ public class ClerkActor extends UntypedActor {
     private void clean(final Clean.Request request) {
         log.debug("clean({})", request);
         Assert.isTrue(StringUtils.equals(clasId, request.getClasId()));
-        final List<String> accountIds = storage.accountIds(clasId);
-        storage.delete(clasId, accountIds.toArray(new String[accountIds.size()]));
+        storage.delete(clasId);
     }
 
     private void createClas(final CreateClas.Request request) {
@@ -134,11 +133,7 @@ public class ClerkActor extends UntypedActor {
 
     private Integer balance(final Balance.Request message) {
         log.debug("balance({})", message);
-        final String value = storage.get(clasId, message.getAccountId());
-        if (value != null) {
-            return Integer.parseInt(value);
-        }
-        return null;
+        return storage.get(clasId, message.getAccountId());
     }
 
     private Long count(final Request message) {

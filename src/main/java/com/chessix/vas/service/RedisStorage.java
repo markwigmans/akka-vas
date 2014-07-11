@@ -25,33 +25,25 @@ public class RedisStorage implements ISpeedStorage {
     }
 
     @Override
-    public String get(final String clasId, final String accountId) {
+    public Integer get(final String clasId, final String accountId) {
         final BoundHashOperations<String, Object, Object> ops = redisTemplate.boundHashOps(clasId);
-        return (String) ops.get(accountId);
+        final String value = (String) ops.get(accountId);
+        if (value != null) {
+            return Integer.getInteger(value);
+        } else {
+            return null;
+        }
     }
 
     @Override
-    public List<String> accountValues(final String clasId) {
+    public List<Integer> accountValues(final String clasId) {
         final BoundHashOperations<String, Object, Object> ops = redisTemplate.boundHashOps(clasId);
         final List<Object> values = ops.values();
-        return Lists.transform(values, new Function<Object, String>() {
+        return Lists.transform(values, new Function<Object, Integer>() {
 
             @Override
-            public String apply(Object input) {
-                return (String) input;
-            }
-        });
-    }
-
-    @Override
-    public List<String> accountIds(final String clasId) {
-        final BoundHashOperations<String, Object, Object> ops = redisTemplate.boundHashOps(clasId);
-        final List<Object> values = Lists.newLinkedList(ops.keys());
-        return Lists.transform(values, new Function<Object, String>() {
-
-            @Override
-            public String apply(Object input) {
-                return (String) input;
+            public Integer apply(Object input) {
+                return Integer.getInteger((String) input);
             }
         });
     }
@@ -82,12 +74,14 @@ public class RedisStorage implements ISpeedStorage {
     }
 
     @Override
-    public void delete(final String clasId, final String... accountIds) {
+    public void delete(final String clasId) {
+        final List<Object> accountIds = Lists.newLinkedList(redisTemplate.boundHashOps(clasId).keys());
+
         redisTemplate.executePipelined(new SessionCallback<List<Object>>() {
             @Override
             public List<Object> execute(final RedisOperations operations) throws DataAccessException {
                 final BoundHashOperations<String, Object, Object> ops = redisTemplate.boundHashOps(clasId);
-                for (final String accountId : accountIds) {
+                for (final Object accountId : accountIds) {
                     ops.delete(accountId);
                 }
                 return null;

@@ -44,15 +44,6 @@ public class Application {
         SpringApplication.run(Application.class, args);
     }
 
-    private static class MvcConfig extends WebMvcConfigurerAdapter {
-
-        @Override
-        public void addInterceptors(final InterceptorRegistry registry) {
-            registry.addInterceptor(new RequestProcessingTimeInterceptor()).addPathPatterns("/**");
-            super.addInterceptors(registry);
-        }
-    }
-
     @Bean
     WebMvcConfigurerAdapter mvcConfigurerAdapter() {
         return new MvcConfig();
@@ -81,7 +72,16 @@ public class Application {
             return actorSystem.actorOf(JournalActor.props(dbService), "Journalizer");
         } else {
             log.debug("Dummy journaling");
-            return actorSystem.actorOf(NullJournalActor.props(), "Journalizer");
+            return actorSystem.actorOf(NullJournalActor.props(), "Dummy-Journalizer");
+        }
+    }
+
+    private static class MvcConfig extends WebMvcConfigurerAdapter {
+
+        @Override
+        public void addInterceptors(final InterceptorRegistry registry) {
+            registry.addInterceptor(new RequestProcessingTimeInterceptor()).addPathPatterns("/**");
+            super.addInterceptors(registry);
         }
     }
 }

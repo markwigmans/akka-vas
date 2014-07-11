@@ -26,14 +26,13 @@ import static akka.pattern.Patterns.ask;
 @Slf4j
 public class ClasService {
 
+    private final static int PAGE_SIZE = 1000;
     private final ActorSystem system;
     private final ISpeedStorage storage;
     private final DBService dbService;
     private final ActorRef journalActor;
     private final ConcurrentMap<String, ActorRef> clasManager;
-
     private final int accountLength = 20;
-    private final static int PAGE_SIZE = 1000;
 
     /**
      * Auto wired constructor
@@ -59,13 +58,13 @@ public class ClasService {
         final String clasName = getClasId(clasId);
         if (getClas(clasName) == null || storage.size(clasName) == 0) {
             log.debug("create({}) : newly", clasId);
-            journalActor.tell( new JournalMessage.ClasCreated(clasName), ActorRef.noSender());
+            journalActor.tell(new JournalMessage.ClasCreated(clasName), ActorRef.noSender());
 
             final ActorRef clas = getClas(clasName) != null ? getClas(clasName) : system.actorOf(
                     ClasActor.props(clasName, accountLength, journalActor, storage), clasActorName(clasName));
             final Duration timeout = Duration.create(1, TimeUnit.SECONDS);
             try {
-                Await.result(ask(clas,new CreateClas.RequestBuilder(clasId).build(), timeout.toMillis()), timeout);
+                Await.result(ask(clas, new CreateClas.RequestBuilder(clasId).build(), timeout.toMillis()), timeout);
                 log.info("CLAS created: {}", clas);
                 clasManager.putIfAbsent(clasName, clas);
                 return true;

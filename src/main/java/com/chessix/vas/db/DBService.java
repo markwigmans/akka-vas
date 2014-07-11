@@ -42,7 +42,7 @@ public class DBService {
     public void createAccount(final AccountCreated message) {
         log.debug("createAccount({})", message);
         final CLAS clas = clasRepository.findByExternalId(message.getClasId());
-        accountRepository.save(new Account(clas, message.getAccountId()));
+        accountRepository.save(new Account(clas, message.getAccountId(), 0));
     }
 
     public void createTransfer(final Transfer message) {

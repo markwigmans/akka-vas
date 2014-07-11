@@ -9,11 +9,12 @@ public interface ISpeedStorage {
     /**
      * Get the value for the given {@code classId} and {@code accountId}.
      */
-    String get(String clasId, String accountId);
+    Integer get(String clasId, String accountId);
 
-    List<String> accountValues(String clasId);
-
-    List<String> accountIds(String clasId);
+    /**
+     * Get all the balance values for the given {@code classId}.
+     */
+    List<Integer> accountValues(String clasId);
 
     /**
      * Number of records of given {@code classId}.
@@ -33,7 +34,7 @@ public interface ISpeedStorage {
     /**
      * Create CLAS
      *
-     * @param clasId  ID of CLAS
+     * @param clasId ID of CLAS
      */
     boolean create(String clasId);
 
@@ -47,10 +48,9 @@ public interface ISpeedStorage {
     boolean create(String clasId, String accountId);
 
     /**
-     * Delete 1 of more accounts.
+     * Delete CLAS and all related accounts and transactions.
      *
-     * @param clasId     ID of CLAS
-     * @param accountIds list of accounts to be removed.
+     * @param clasId ID of CLAS
      */
-    void delete(String clasId, String... accountIds);
+    void delete(String clasId);
 }
