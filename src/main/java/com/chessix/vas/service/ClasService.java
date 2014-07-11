@@ -96,10 +96,6 @@ public class ClasService {
         return total == 0;
     }
 
-    public ActorRef getJournal() {
-        return journalActor;
-    }
-
     String getClasId(final String clasId) {
         return StringUtils.lowerCase(StringUtils.trimToEmpty(clasId));
     }

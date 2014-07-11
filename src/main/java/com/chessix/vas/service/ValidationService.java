@@ -7,6 +7,7 @@ import com.chessix.vas.actors.messages.Ready;
 import com.chessix.vas.db.Account;
 import com.chessix.vas.db.DBService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -19,20 +20,20 @@ public class ValidationService {
 
     private final static int PAGE_SIZE = 1000;
 
-    private final ISpeedStorage storage;
+    private final ISpeedStorage speedStorage;
     private final DBService dbService;
-    private final ActorRef journalActor;
+    private final ActorRef batchStorage;
 
     @Autowired
-    public ValidationService(final ClasService clasService, final ISpeedStorage storage, final DBService dbService) {
+    public ValidationService(final ClasService clasService, final ISpeedStorage speedStorage, final ActorRef batchStorage, final DBService dbService) {
         super();
-        this.storage = storage;
+        this.speedStorage = speedStorage;
         this.dbService = dbService;
-        this.journalActor = clasService.getJournal();
+        this.batchStorage = batchStorage;
     }
 
     public Object prepare(final Timeout timeout) throws Exception {
-        return Await.result(Patterns.ask(journalActor, new Ready.RequestBuilder(true).build(), timeout), timeout.duration());
+        return Await.result(Patterns.ask(batchStorage, new Ready.RequestBuilder(true).build(), timeout), timeout.duration());
     }
 
     /**
@@ -48,9 +49,9 @@ public class ValidationService {
             accounts = dbService.findAccountsByClas(clasId, new PageRequest(page, PAGE_SIZE));
             for (final Account account : accounts) {
                 final Integer speed = balance(clasId, account.getExternalId());
-                final boolean compare = (speed != null) && account.getBalance() == speed;
+                final boolean compare = ObjectUtils.compare(speed, account.getBalance()) == 0;
                 if (!compare) {
-                    log.warn("account {}/{} is our of sync", clasId, account.getExternalId());
+                    log.warn("account {}/{} is out of sync. speed/batch = {}/{}", clasId, account.getExternalId(), speed, account.getBalance());
                 }
                 result = result && compare;
             }
@@ -60,6 +61,6 @@ public class ValidationService {
     }
 
     private Integer balance(final String clasId, final String accountId) {
-        return storage.get(clasId, accountId);
+        return speedStorage.get(clasId, accountId);
     }
 }

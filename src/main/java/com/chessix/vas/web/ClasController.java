@@ -34,6 +34,7 @@ public class ClasController {
 
     private final ActorSystem system;
     private final ClasService clasService;
+    private final ActorRef batchStorage;
     private final ValidationService validationService;
 
     private final Timeout timeout = new Timeout(Duration.create(10, TimeUnit.SECONDS));
@@ -42,10 +43,11 @@ public class ClasController {
      * Auto wired constructor
      */
     @Autowired
-    public ClasController(final ActorSystem system, final ClasService clasService, final ValidationService validationService) {
+    public ClasController(final ActorSystem system, final ClasService clasService, final ActorRef batchStorage, final ValidationService validationService) {
         super();
         this.system = system;
         this.clasService = clasService;
+        this.batchStorage = batchStorage;
         this.validationService = validationService;
     }
 
@@ -69,7 +71,7 @@ public class ClasController {
     public DeferredResult<Object> clean(@PathVariable final String clasId) {
         log.debug("clean({})", clasId);
 
-        clasService.getJournal().tell(new JournalMessage.Clean(clasId), ActorRef.noSender());
+        batchStorage.tell(new JournalMessage.Clean(clasId), ActorRef.noSender());
 
         final DeferredResult<Object> deferredResult = new DeferredResult<Object>();
         final ActorRef clas = clasService.getClas(clasId);
