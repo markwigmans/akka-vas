@@ -28,8 +28,9 @@ public class RedisStorage implements ISpeedStorage {
     public Integer get(final String clasId, final String accountId) {
         final BoundHashOperations<String, Object, Object> ops = redisTemplate.boundHashOps(clasId);
         final String value = (String) ops.get(accountId);
+
         if (value != null) {
-            return Integer.getInteger(value);
+            return Integer.parseInt(value);
         } else {
             return null;
         }
@@ -43,7 +44,7 @@ public class RedisStorage implements ISpeedStorage {
 
             @Override
             public Integer apply(Object input) {
-                return Integer.getInteger((String) input);
+                return Integer.parseInt((String) input);
             }
         });
     }

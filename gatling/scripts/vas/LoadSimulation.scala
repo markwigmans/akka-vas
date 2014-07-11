@@ -15,7 +15,7 @@ import scala.util.Random
  */
 class LoadSimulation extends Simulation {
       
- val loadRunChain = 
+ val loadTransferChain = 
     repeat(Config.runs) {
       exec(session => {
         val clas   = Utils.randInt(Config.clas) + 1
@@ -30,10 +30,24 @@ class LoadSimulation extends Simulation {
       })
       .exec(http("transfer").post("transfer/${clasId}/${from}/${to}/${amount}").asJSON.check(status.is(200)))
     }
+
+ val loadBalanceChain = 
+    repeat(Config.runs) {
+      exec(session => {
+        val clas    = Utils.randInt(Config.clas) + 1
+        val account = Utils.randInt(Config.merchants + Config.accounts) + 1
+        session
+          .setAttribute("clasId", Utils.clasID(clas))
+          .setAttribute("accountId", account)
+      })
+      .exec(http("balance").get("account/${clasId}/${accountId}/balance").asJSON.check(status.is(200)))
+    }
     
-  val loadScn = scenario("Load Test").exec(loadRunChain)
+  val transferScn = scenario("Load Transfer Test").exec(loadTransferChain)
+  val balanceScn = scenario("Load Balance Test").exec(loadBalanceChain)
      
   setUp(
-    loadScn.users(Config.users).ramp(Config.ramp).protocolConfig(Config.httpConf)
+    transferScn.users(Config.usersTransfer).ramp(Config.ramp).protocolConfig(Config.httpConf),
+    balanceScn.users(Config.usersBalance).ramp(Config.ramp).protocolConfig(Config.httpConf)
   )
 }
