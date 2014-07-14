@@ -34,12 +34,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 public class AccountController {
 
+    private static final int MAX_ACCOUNTS_IN_BATCH = 50000;
     private final ActorSystem system;
     private final ClasService clasService;
     private final AccountService accountService;
-
     private final long timeout = 30000L;
-    private static final int MAX_ACCOUNTS_IN_BATCH = 50000;
 
     /**
      * Auto wired constructor

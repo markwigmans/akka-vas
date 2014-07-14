@@ -8,7 +8,6 @@ import com.google.common.collect.Lists;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -62,23 +61,23 @@ public class RdbmsStorage implements ISpeedStorage {
 
     @Override
     public void transfer(final String clasId, final String fromAccountId, final String toAccountId, final int value) {
-        dbService.createTransfer(new JournalMessage.Transfer(clasId, fromAccountId, toAccountId, value, new Date()));
+        dbService.createTransfer(new JournalMessage.TransferBuilder(clasId, fromAccountId, toAccountId, value).build());
     }
 
     @Override
     public boolean create(final String clasId) {
-        dbService.createClas(new JournalMessage.ClasCreated(clasId));
+        dbService.createClas(new JournalMessage.ClasCreatedBuilder(clasId).build());
         return true;
     }
 
     @Override
     public boolean create(final String clasId, final String accountId) {
-        dbService.createAccount(new JournalMessage.AccountCreated(clasId, accountId));
+        dbService.createAccount(new JournalMessage.AccountCreatedBuilder(clasId, accountId).build());
         return true;
     }
 
     @Override
     public void delete(final String clasId) {
-        dbService.clean(new JournalMessage.Clean(clasId));
+        dbService.clean(new JournalMessage.CleanBuilder(clasId).build());
     }
 }
