@@ -7,10 +7,7 @@ import lombok.ToString;
 import lombok.experimental.FieldDefaults;
 
 /**
- * 
- * 
  * @author Mark Wigmans
- *
  */
 public class Ready {
 

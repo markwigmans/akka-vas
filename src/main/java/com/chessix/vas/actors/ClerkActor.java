@@ -7,23 +7,16 @@ import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import com.chessix.vas.actors.messages.*;
 import com.chessix.vas.actors.messages.Count.Request;
+import com.chessix.vas.service.ISpeedStorage;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.dao.DataAccessException;
-import org.springframework.data.redis.core.BoundHashOperations;
-import org.springframework.data.redis.core.RedisOperations;
-import org.springframework.data.redis.core.SessionCallback;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.util.Assert;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 /**
- * 
  * @author Mark Wigmans
- *
  */
 public class ClerkActor extends UntypedActor {
 
@@ -32,26 +25,30 @@ public class ClerkActor extends UntypedActor {
     private final String clasId;
     private final int accountLength;
     private final ActorRef journalActor;
-    private final StringRedisTemplate redisTemplate;
-
-    public static Props props(final String clasId, final int accountLength, final ActorRef journalActor,
-            final StringRedisTemplate redisTemplate) {
-        return Props.create(ClerkActor.class, clasId, accountLength, journalActor, redisTemplate);
-    }
+    private final ISpeedStorage storage;
 
     private ClerkActor(final String clasId, final int accountLength, final ActorRef journalActor,
-            final StringRedisTemplate redisTemplate) {
+                       final ISpeedStorage storage) {
         super();
         this.clasId = clasId;
         this.accountLength = accountLength;
         this.journalActor = journalActor;
-        this.redisTemplate = redisTemplate;
+        this.storage = storage;
+    }
+
+    public static Props props(final String clasId, final int accountLength, final ActorRef journalActor,
+                              final ISpeedStorage storage) {
+        return Props.create(ClerkActor.class, clasId, accountLength, journalActor, storage);
     }
 
     @Override
     public void onReceive(final Object message) throws Exception {
         log.debug("Received message: {}", message);
-        if (message instanceof CreateAccount.Request) {
+        if (message instanceof CreateClas.Request) {
+            final CreateClas.Request request = (CreateClas.Request) message;
+            createClas(request);
+            getSender().tell(new CreateClas.ResponseBuilder(true).build(), getSender());
+        } else if (message instanceof CreateAccount.Request) {
             final CreateAccount.Request request = (CreateAccount.Request) message;
             final String accountId = createAccount(request);
             if (StringUtils.isNoneBlank(accountId)) {
@@ -92,38 +89,30 @@ public class ClerkActor extends UntypedActor {
     }
 
     /**
-     * 
+     *
      */
     private boolean validate() {
-        final BoundHashOperations<String, Object, Object> ops = redisTemplate.boundHashOps(clasId);
-        final List<Object> values = ops.values();
+        final List<Integer> values = storage.accountValues(clasId);
         int total = 0;
-        for (Object value : values) {
-            total += Integer.parseInt((String) value);
+        for (final Integer value : values) {
+            total += value;
         }
+        // check if total is in balance
         return total == 0;
     }
 
     /**
-     * 
+     *
      */
     private void clean(final Clean.Request request) {
+        log.debug("clean({})", request);
         Assert.isTrue(StringUtils.equals(clasId, request.getClasId()));
-        final BoundHashOperations<String, Object, Object> ops = redisTemplate.boundHashOps(clasId);
-        final Set<Object> keys = ops.keys();
+        storage.delete(clasId);
+    }
 
-        redisTemplate.executePipelined(new SessionCallback<List<Object>>() {
-            @SuppressWarnings({ "rawtypes", "unchecked" })
-            @Override
-            public List<Object> execute(final RedisOperations operations) throws DataAccessException {
-                final BoundHashOperations ops = operations.boundHashOps(clasId);
-                for (Object key : keys) {
-                    ops.delete((String) key);
-                }
-                return null;
-            }
-        });
-
+    private void createClas(final CreateClas.Request request) {
+        log.debug("createClas({})", request);
+        storage.create(clasId);
     }
 
     private String createAccount(final CreateAccount.Request message) {
@@ -134,8 +123,7 @@ public class ClerkActor extends UntypedActor {
         } else {
             accountId = RandomStringUtils.randomNumeric(accountLength);
         }
-        final BoundHashOperations<String, Object, Object> ops = redisTemplate.boundHashOps(clasId);
-        final Boolean inserted = ops.putIfAbsent(accountId, "0");
+        final Boolean inserted = storage.create(clasId, accountId);
         if (inserted) {
             return accountId;
         } else {
@@ -145,28 +133,20 @@ public class ClerkActor extends UntypedActor {
 
     private Integer balance(final Balance.Request message) {
         log.debug("balance({})", message);
-        final BoundHashOperations<String, Object, Object> ops = redisTemplate.boundHashOps(clasId);
-        final String value = (String) ops.get(message.getAccountId());
-        if (value != null) {
-            return Integer.parseInt(value);
-        }
-        return null;
+        return storage.get(clasId, message.getAccountId());
     }
 
     private Long count(final Request message) {
-        log.debug("balance({})", message);
-        final BoundHashOperations<String, Object, Object> ops = redisTemplate.boundHashOps(clasId);
-        return ops.size();
+        log.debug("count({})", message);
+        return storage.size(clasId);
     }
 
     private boolean transfer(final Transfer.Request message) {
         final String fromAccountId = message.getFrom();
         final String toAccountId = message.getTo();
 
-        final BoundHashOperations<String, Object, Object> ops = redisTemplate.boundHashOps(clasId);
-        if ((ops.get(fromAccountId) != null) && (ops.get(toAccountId) != null)) {
-            ops.increment(fromAccountId, -message.getAmount());
-            ops.increment(toAccountId, message.getAmount());
+        if ((storage.get(clasId, fromAccountId) != null) && (storage.get(clasId, toAccountId) != null)) {
+            storage.transfer(clasId, fromAccountId, toAccountId, message.getAmount());
             return true;
         } else {
             return false;

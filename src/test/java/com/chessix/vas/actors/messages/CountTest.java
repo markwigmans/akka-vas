@@ -1,7 +1,6 @@
 package com.chessix.vas.actors.messages;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
-
 import org.junit.Test;
 
 public class CountTest {
@@ -12,7 +11,7 @@ public class CountTest {
     }
 
     @Test
-    public void equalsContractCountResponset() {
+    public void equalsContractCountResponse() {
         EqualsVerifier.forClass(Count.Response.class).verify();
     }
 }

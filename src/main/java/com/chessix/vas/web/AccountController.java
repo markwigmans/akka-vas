@@ -27,9 +27,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * 
  * @author Mark Wigmans
- * 
  */
 @RestController
 @RequestMapping(value = "/account")
@@ -41,6 +39,7 @@ public class AccountController {
     private final AccountService accountService;
 
     private final long timeout = 30000L;
+    private static final int MAX_ACCOUNTS_IN_BATCH = 50000;
 
     /**
      * Auto wired constructor
@@ -88,14 +87,14 @@ public class AccountController {
 
     @RequestMapping(value = "/{clasId}/range/from/{start}/count/{count}", method = RequestMethod.POST)
     public DeferredResult<Object> createAccounts(@PathVariable final String clasId, @PathVariable final String start,
-            @PathVariable final String count) {
+                                                 @PathVariable final String count) {
         log.info("createAccounts({},{},{})", clasId, start, count);
         final ActorRef clas = clasService.getClas(clasId);
         final DeferredResult<Object> deferredResult = new DeferredResult<Object>();
         final int countValue = Integer.parseInt(count);
 
-        if (countValue > 50000) {
-            deferredResult.setErrorResult(String.format("count %s is to large (> 50.000)", count));
+        if (countValue > MAX_ACCOUNTS_IN_BATCH) {
+            deferredResult.setErrorResult(String.format("count %s is to large (> %d)", count, MAX_ACCOUNTS_IN_BATCH));
             return deferredResult;
         }
 

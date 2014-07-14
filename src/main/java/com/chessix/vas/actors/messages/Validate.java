@@ -8,9 +8,8 @@ import lombok.experimental.FieldDefaults;
 
 /**
  * Validate the clas.
- * 
- * @author Mark Wigmans
  *
+ * @author Mark Wigmans
  */
 public class Validate {
 

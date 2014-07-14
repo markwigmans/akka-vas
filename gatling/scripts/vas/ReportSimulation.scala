@@ -23,8 +23,8 @@ class ReportSimulation extends Simulation {
         val clas = session.getTypedAttribute[Int]("x") + 1
         session.setAttribute("clasId", Utils.clasID(clas))
       })
-      .exec(http("validate fast layer").get("clas/${clasId}/validate/fast").check(status.is(200),jsonPath("$..successful").is("true")))
-      .exec(http("validate data layer").get("clas/${clasId}/validate/data").check(status.is(200),jsonPath("$..successful").is("true")))
+      .exec(http("validate speed layer").get("clas/${clasId}/validate/speed").check(status.is(200),jsonPath("$..successful").is("true")))
+      .exec(http("validate batch layer").get("clas/${clasId}/validate/batch").check(status.is(200),jsonPath("$..successful").is("true")))
       .exec(http("validate layers combined").get("clas/${clasId}/validate/insync").check(status.is(200),jsonPath("$..successful").is("true")))
     }
    

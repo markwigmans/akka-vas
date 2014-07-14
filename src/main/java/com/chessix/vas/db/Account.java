@@ -1,19 +1,8 @@
 package com.chessix.vas.db;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
+import lombok.*;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.ToString;
+import javax.persistence.*;
 
 /**
  * An account in Pure SVA has a single currency and is bound to exactly 1 bank
@@ -21,11 +10,11 @@ import lombok.ToString;
  */
 @SuppressWarnings("serial")
 @Entity
-@Table(name = "A_ACCOUNT", uniqueConstraints = @UniqueConstraint(columnNames = { "CLAS_ID", "EXTERNAL_ID" }))
+@Table(name = "T_ACCOUNT", uniqueConstraints = @UniqueConstraint(columnNames = {"CLAS_ID", "EXTERNAL_ID"}))
 @Data
 @NoArgsConstructor
 @RequiredArgsConstructor
-@EqualsAndHashCode(callSuper = true, exclude = { "clas" })
+@EqualsAndHashCode(callSuper = true, exclude = {"clas"})
 @ToString(exclude = "clas")
 public class Account extends BaseModel {
 
@@ -39,5 +28,6 @@ public class Account extends BaseModel {
     private String externalId;
 
     @Column(name = "BALANCE", nullable = false)
-    private long balance = 0L;
+    @NonNull
+    private Integer balance;
 }

@@ -1,27 +1,24 @@
 package com.chessix.vas.db;
 
-import org.springframework.transaction.annotation.Transactional;
-
-import lombok.val;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.stereotype.Service;
-
 import com.chessix.vas.actors.messages.JournalMessage.AccountCreated;
 import com.chessix.vas.actors.messages.JournalMessage.ClasCreated;
 import com.chessix.vas.actors.messages.JournalMessage.Clean;
 import com.chessix.vas.actors.messages.JournalMessage.Transfer;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Service to do the actual RDBMS actions.
- * 
- * @author Mark Wigmans
  *
+ * @author Mark Wigmans
  */
 @Service
 @Transactional
+@Slf4j
 public class DBService {
 
     private final CLASRepository clasRepository;
@@ -30,7 +27,7 @@ public class DBService {
 
     @Autowired
     public DBService(final CLASRepository clasRepository, final AccountRepository accountRepository,
-            final TransactionRepository transactionRepository) {
+                     final TransactionRepository transactionRepository) {
         super();
         this.clasRepository = clasRepository;
         this.accountRepository = accountRepository;
@@ -38,18 +35,21 @@ public class DBService {
     }
 
     public void createClas(final ClasCreated message) {
+        log.debug("createClas({})", message);
         clasRepository.save(new CLAS(message.getClasId()));
     }
 
     public void createAccount(final AccountCreated message) {
-        val clas = clasRepository.findByExternalId(message.getClasId());
-        accountRepository.save(new Account(clas, message.getAccountId()));
+        log.debug("createAccount({})", message);
+        final CLAS clas = clasRepository.findByExternalId(message.getClasId());
+        accountRepository.save(new Account(clas, message.getAccountId(), 0));
     }
 
     public void createTransfer(final Transfer message) {
-        val clas = clasRepository.findByExternalId(message.getClasId());
-        val from = accountRepository.findByClasAndExternalId(clas, message.getFromAccountId());
-        val to = accountRepository.findByClasAndExternalId(clas, message.getToAccountId());
+        log.debug("createTransfer({})", message);
+        final CLAS clas = clasRepository.findByExternalId(message.getClasId());
+        final Account from = accountRepository.findByClasAndExternalId(clas, message.getFromAccountId());
+        final Account to = accountRepository.findByClasAndExternalId(clas, message.getToAccountId());
         transactionRepository.save(new Transaction(clas, from, to, message.getAmount(), message.getDate()));
         from.setBalance(from.getBalance() - message.getAmount());
         to.setBalance(to.getBalance() + message.getAmount());
@@ -58,7 +58,8 @@ public class DBService {
     }
 
     public void clean(final Clean message) {
-        val clas = clasRepository.findByExternalId(message.getClasId());
+        log.debug("clean({})", message);
+        final CLAS clas = clasRepository.findByExternalId(message.getClasId());
         if (clas != null) {
             // there is data
             transactionRepository.deleteClasTransactions(clas);
@@ -68,9 +69,20 @@ public class DBService {
     }
 
     @Transactional(readOnly = true)
-    public Page<Account> findAccountsByClas(String clasId, PageRequest pageRequest) {
-        val clas = clasRepository.findByExternalId(clasId);
+    public Page<Account> findAccountsByClas(final String clasId, final PageRequest pageRequest) {
+        final CLAS clas = clasRepository.findByExternalId(clasId);
         return accountRepository.findByClas(clas, pageRequest);
     }
 
+    @Transactional(readOnly = true)
+    public Account findAccount(final String clasId, final String accountId) {
+        final CLAS clas = clasRepository.findByExternalId(clasId);
+        return accountRepository.findByClasAndExternalId(clas, accountId);
+    }
+
+    @Transactional(readOnly = true)
+    public Long count(final String clasId) {
+        final CLAS clas = clasRepository.findByExternalId(clasId);
+        return accountRepository.countByClas(clas);
+    }
 }

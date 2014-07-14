@@ -8,9 +8,8 @@ import lombok.experimental.FieldDefaults;
 
 /**
  * Transfer amount between two accounts
- * 
- * @author Mark Wigmans
  *
+ * @author Mark Wigmans
  */
 public class Transfer {
 
