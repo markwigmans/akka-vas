@@ -11,7 +11,9 @@ import org.springframework.data.domain.PageRequest;
 import java.util.List;
 
 /**
- * Created by Mark Wigmans on 9-7-2014.
+ * RDBMS/JPA storage version of the {@code ISpeedStorage} interface.
+ *
+ * @author Mark Wigmans
  */
 public class RdbmsStorage implements ISpeedStorage {
 

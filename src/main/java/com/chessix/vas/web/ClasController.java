@@ -37,7 +37,7 @@ public class ClasController {
     private final ActorRef batchStorage;
     private final ValidationService validationService;
 
-    private final Timeout timeout = new Timeout(Duration.create(10, TimeUnit.SECONDS));
+    private final Timeout timeout = new Timeout(Duration.create(1, TimeUnit.MINUTES));
 
     /**
      * Auto wired constructor

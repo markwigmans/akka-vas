@@ -21,7 +21,7 @@ public class SimulationController {
 
     private final ValidationService validationService;
 
-    private final Timeout timeout = new Timeout(Duration.create(30, TimeUnit.MINUTES));
+    private final Timeout timeout = new Timeout(Duration.create(90, TimeUnit.MINUTES));
 
     @Autowired
     public SimulationController(final ValidationService validationService) {
@@ -29,6 +29,9 @@ public class SimulationController {
         this.validationService = validationService;
     }
 
+    /**
+     * The simulation is stopped. Return if all messages are processed.
+     */
     @RequestMapping(value = "/stop", method = RequestMethod.POST)
     public Object stop() throws Exception {
         return validationService.prepare(timeout);
