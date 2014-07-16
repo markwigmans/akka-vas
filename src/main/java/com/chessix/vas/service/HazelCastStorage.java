@@ -57,7 +57,7 @@ public class HazelcastStorage implements ISpeedStorage {
     }
 
     @Override
-    public Long size(String clasId) {
+    public Long size(final String clasId) {
         final Collection<String> ids = accounts.get(clasId);
         if (ids != null) {
             return new Long(ids.size());
@@ -67,7 +67,7 @@ public class HazelcastStorage implements ISpeedStorage {
     }
 
     @Override
-    public void transfer(String clasId, String fromAccountId, String toAccountId, int value) {
+    public void transfer(final String clasId, final String fromAccountId, final String toAccountId, final int value) {
         hazelcastInstance.getAtomicLong(calcKey(clasId, fromAccountId)).addAndGet(-value);
         hazelcastInstance.getAtomicLong(calcKey(clasId, toAccountId)).addAndGet(value);
     }

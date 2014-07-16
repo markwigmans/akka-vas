@@ -40,7 +40,7 @@ public class RedisStorage implements ISpeedStorage {
         return Lists.transform(values, new Function<Object, Integer>() {
 
             @Override
-            public Integer apply(Object input) {
+            public Integer apply(final Object input) {
                 return Integer.parseInt((String) input);
             }
         });
@@ -53,7 +53,7 @@ public class RedisStorage implements ISpeedStorage {
     }
 
     @Override
-    public void transfer(String clasId, String fromAccountId, String toAccountId, int value) {
+    public void transfer(final String clasId, final String fromAccountId, final String toAccountId, final int value) {
         final BoundHashOperations<String, Object, Object> ops = redisTemplate.boundHashOps(clasId);
         ops.increment(fromAccountId, -value);
         ops.increment(toAccountId, value);

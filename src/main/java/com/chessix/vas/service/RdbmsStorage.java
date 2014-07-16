@@ -45,7 +45,7 @@ public class RdbmsStorage implements ISpeedStorage {
             result.addAll(Lists.transform(accounts.getContent(), new Function<Account, Integer>() {
 
                 @Override
-                public Integer apply(Account input) {
+                public Integer apply(final Account input) {
                     return input.getBalance();
                 }
             }));

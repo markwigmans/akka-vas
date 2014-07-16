@@ -81,7 +81,7 @@ public class JournalActor extends UntypedActor {
     /**
      * Update the time delay between creation of the message and processing it.
      */
-    private void updateTimeDelay(Date timestamp) {
+    private void updateTimeDelay(final Date timestamp) {
         final Duration d = new Interval(new DateTime(timestamp), DateTime.now()).toDuration();
         if ((delay == null) || (d.compareTo(delay) > 0)) {
             delay = d;

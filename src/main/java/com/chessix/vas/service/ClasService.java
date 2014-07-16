@@ -68,7 +68,7 @@ public class ClasService {
                 log.info("CLAS created: {}", clas);
                 clasManager.putIfAbsent(clasName, clas);
                 return true;
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 log.error("Exception", e);
                 return false;
             }

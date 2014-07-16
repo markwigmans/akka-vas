@@ -51,7 +51,7 @@ public class Transfer {
         private String to;
         private int amount;
 
-        public RequestBuilder(String from, String to, int amount) {
+        public RequestBuilder(final String from, final String to, final int amount) {
             this.from = from;
             this.to = to;
             this.amount = amount;
