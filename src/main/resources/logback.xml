@@ -13,9 +13,10 @@
 
 	<appender name="FILE" class="ch.qos.logback.core.FileAppender">
 		<file>server.log</file>
-		<layout class="ch.qos.logback.classic.PatternLayout">
+		<encoder>
 			<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
-		</layout>
+            <immediateFlush>false</immediateFlush>
+		</encoder>
 	</appender>
 
 	<appender name="ASYNC" class="ch.qos.logback.classic.AsyncAppender">
@@ -24,16 +25,16 @@
 
 	<appender name="akka" class="ch.qos.logback.core.FileAppender">
 		<file>akka.log</file>
-		<layout class="ch.qos.logback.classic.PatternLayout">
+        <encoder>
 			<pattern>%X{akkaTimestamp} %-5level %logger{36} %X{akkaSource} - %msg%n</pattern>
-		</layout>
+        </encoder>
 	</appender>
 
-	<logger name="com.chessix" level="debug" />
+	<logger name="com.chessix" level="info" />
 
-	<logger name="com.chessix.vas.actors" level="debug">
-		<appender-ref ref="akka" />
-	</logger>
+    <logger name="com.chessix.vas.actors" level="info" additivity="false">
+        <appender-ref ref="akka"/>
+    </logger>
 
 	<root level="info">
 		<appender-ref ref="STDOUT" />

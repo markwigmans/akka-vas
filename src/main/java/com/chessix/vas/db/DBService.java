@@ -50,7 +50,7 @@ public class DBService {
         final CLAS clas = clasRepository.findByExternalId(message.getClasId());
         final Account from = accountRepository.findByClasAndExternalId(clas, message.getFromAccountId());
         final Account to = accountRepository.findByClasAndExternalId(clas, message.getToAccountId());
-        transactionRepository.save(new Transaction(clas, from, to, message.getAmount(), message.getDate()));
+        transactionRepository.save(new Transaction(clas, from, to, message.getAmount(), message.getTimestamp()));
         from.setBalance(from.getBalance() - message.getAmount());
         to.setBalance(to.getBalance() + message.getAmount());
         accountRepository.save(from);

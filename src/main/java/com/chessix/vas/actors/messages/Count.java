@@ -20,7 +20,7 @@ public class Count {
         @Getter
         private final String clasId;
 
-        private Request(RequestBuilder requestBuilder) {
+        private Request(final RequestBuilder requestBuilder) {
             this.clasId = requestBuilder.clasId;
         }
     }

@@ -36,7 +36,7 @@ public class Validate {
         @Getter
         String message;
 
-        private Response(ResponseBuilder responseBuilder) {
+        private Response(final ResponseBuilder responseBuilder) {
             this.successful = responseBuilder.successful;
             this.clasId = responseBuilder.clasId;
             this.message = responseBuilder.message;

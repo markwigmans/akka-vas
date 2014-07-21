@@ -12,7 +12,6 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
 
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -54,7 +53,7 @@ public class ClerkActor extends UntypedActor {
             if (StringUtils.isNoneBlank(accountId)) {
                 getSender().tell(new CreateAccount.ResponseBuilder(true).clasId(request.getClasId()).accountId(accountId).build(),
                         getSelf());
-                journalActor.tell(new JournalMessage.AccountCreated(clasId, accountId), getSelf());
+                journalActor.tell(new JournalMessage.AccountCreatedBuilder(clasId, accountId).build(), getSelf());
             } else {
                 getSender().tell(
                         new CreateAccount.ResponseBuilder(false).clasId(request.getClasId()).message("Account does already exist")
@@ -64,8 +63,7 @@ public class ClerkActor extends UntypedActor {
             final Transfer.Request request = (Transfer.Request) message;
             if (transfer(request)) {
                 getSender().tell(new Transfer.ResponseBuilder(true).message("Ok").build(), getSelf());
-                journalActor.tell(new JournalMessage.Transfer(clasId, request.getFrom(), request.getTo(), request.getAmount(),
-                        new Date()), getSelf());
+                journalActor.tell(new JournalMessage.TransferBuilder(clasId, request.getFrom(), request.getTo(), request.getAmount()).build(), getSelf());
             } else {
                 getSender().tell(new Transfer.ResponseBuilder(false).message("Accounts do not exist").build(), getSelf());
             }

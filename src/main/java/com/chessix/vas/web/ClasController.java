@@ -37,7 +37,7 @@ public class ClasController {
     private final ActorRef batchStorage;
     private final ValidationService validationService;
 
-    private final Timeout timeout = new Timeout(Duration.create(10, TimeUnit.SECONDS));
+    private final Timeout timeout = new Timeout(Duration.create(1, TimeUnit.MINUTES));
 
     /**
      * Auto wired constructor
@@ -71,7 +71,7 @@ public class ClasController {
     public DeferredResult<Object> clean(@PathVariable final String clasId) {
         log.debug("clean({})", clasId);
 
-        batchStorage.tell(new JournalMessage.Clean(clasId), ActorRef.noSender());
+        batchStorage.tell(new JournalMessage.CleanBuilder(clasId).build(), ActorRef.noSender());
 
         final DeferredResult<Object> deferredResult = new DeferredResult<Object>();
         final ActorRef clas = clasService.getClas(clasId);
@@ -98,7 +98,7 @@ public class ClasController {
     }
 
     /**
-     *  Count the number of records for the CLAS with id {@code classId}.
+     * Count the number of records for the CLAS with id {@code classId}.
      */
     @RequestMapping(value = "/{clasId}/count", method = RequestMethod.GET)
     public DeferredResult<Object> count(@PathVariable final String clasId) {

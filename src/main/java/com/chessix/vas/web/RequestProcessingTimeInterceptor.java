@@ -20,16 +20,20 @@ public class RequestProcessingTimeInterceptor extends HandlerInterceptorAdapter 
     @Override
     public boolean preHandle(final HttpServletRequest request, final HttpServletResponse response, final Object handler)
             throws Exception {
-        final long startTime = System.currentTimeMillis();
-        log.debug("Request URL::{}:: Start", request.getRequestURL());
-        request.setAttribute(START_TIME, startTime);
+        if (log.isDebugEnabled()) {
+            final long startTime = System.currentTimeMillis();
+            log.debug("Request URL::{}:: Start", request.getRequestURL());
+            request.setAttribute(START_TIME, startTime);
+        }
         return super.preHandle(request, response, handler);
     }
 
     @Override
     public void afterCompletion(final HttpServletRequest request, final HttpServletResponse response, final Object handler,
                                 final Exception ex) throws Exception {
-        final long startTime = (Long) request.getAttribute(START_TIME);
-        log.info("Request URL::{}:: Time Taken={} ms", request.getRequestURL(), System.currentTimeMillis() - startTime);
+        if (log.isDebugEnabled()) {
+            final long startTime = (Long) request.getAttribute(START_TIME);
+            log.debug("Request URL::{}:: Time Taken={} ms", request.getRequestURL(), System.currentTimeMillis() - startTime);
+        }
     }
 }

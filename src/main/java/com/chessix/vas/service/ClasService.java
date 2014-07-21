@@ -58,7 +58,7 @@ public class ClasService {
         final String clasName = getClasId(clasId);
         if (getClas(clasName) == null || storage.size(clasName) == 0) {
             log.debug("create({}) : newly", clasId);
-            journalActor.tell(new JournalMessage.ClasCreated(clasName), ActorRef.noSender());
+            journalActor.tell(new JournalMessage.ClasCreatedBuilder(clasName).build(), ActorRef.noSender());
 
             final ActorRef clas = getClas(clasName) != null ? getClas(clasName) : system.actorOf(
                     ClasActor.props(clasName, accountLength, journalActor, storage), clasActorName(clasName));
@@ -68,7 +68,7 @@ public class ClasService {
                 log.info("CLAS created: {}", clas);
                 clasManager.putIfAbsent(clasName, clas);
                 return true;
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 log.error("Exception", e);
                 return false;
             }

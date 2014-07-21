@@ -14,7 +14,7 @@ public class ClasActorTest {
 
     @Test
     public void testProps() {
-        ActorRef journalActor = Mockito.mock(ActorRef.class);
+        final ActorRef journalActor = Mockito.mock(ActorRef.class);
         final Props props = ClasActor.props("123", 20, journalActor, null);
         final TestActorRef<ClasActor> ref = TestActorRef.create(system, props, "Clas-1");
         Assert.assertNotNull(ref);
