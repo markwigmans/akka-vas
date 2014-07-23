@@ -1,3 +1,18 @@
+/******************************************************************************
+ Copyright 2014 Mark Wigmans
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+ http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ******************************************************************************/
 package com.chessix.vas.actors;
 
 import akka.actor.ActorSystem;
@@ -8,7 +23,10 @@ import com.chessix.vas.actors.messages.CreateAccount.Response;
 import com.chessix.vas.actors.messages.JournalMessage;
 import com.chessix.vas.db.DBService;
 import com.chessix.vas.service.ISpeedStorage;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Ignore;
 import org.mockito.Mockito;
 import scala.concurrent.Await;
 import scala.concurrent.Future;
@@ -30,7 +48,7 @@ public class ClerkActorTest {
         }
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @Ignore
     public void testCreateAccount() throws Exception {
         // Given
@@ -46,7 +64,7 @@ public class ClerkActorTest {
         final TestActorRef<ClerkActor> clerkRef = TestActorRef.create(system, clerkProps, "clerk-1");
 
         // When
-        Mockito.when(storage.create(Mockito.eq(clasId),Mockito.eq(accountId))).thenReturn(Boolean.TRUE);
+        Mockito.when(storage.create(Mockito.eq(clasId), Mockito.eq(accountId))).thenReturn(Boolean.TRUE);
 
         // Then
         final Future<Object> future = akka.pattern.Patterns.ask(clerkRef,
