@@ -1,44 +1,62 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+Copyright 2014 Mark Wigmans
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+
 <configuration>
 
-	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-			<level>WARN</level>
-		</filter>
-		<layout class="ch.qos.logback.classic.PatternLayout">
-			<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
-		</layout>
-	</appender>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>WARN</level>
+        </filter>
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </layout>
+    </appender>
 
 
-	<appender name="FILE" class="ch.qos.logback.core.FileAppender">
-		<file>server.log</file>
-		<encoder>
-			<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
-            <immediateFlush>false</immediateFlush>
-		</encoder>
-	</appender>
-
-	<appender name="ASYNC" class="ch.qos.logback.classic.AsyncAppender">
-		<appender-ref ref="FILE" />
-	</appender>
-
-	<appender name="akka" class="ch.qos.logback.core.FileAppender">
-		<file>akka.log</file>
+    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+        <file>server.log</file>
         <encoder>
-			<pattern>%X{akkaTimestamp} %-5level %logger{36} %X{akkaSource} - %msg%n</pattern>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <immediateFlush>false</immediateFlush>
         </encoder>
-	</appender>
+    </appender>
 
-	<logger name="com.chessix" level="info" />
+    <appender name="ASYNC" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="FILE"/>
+    </appender>
+
+    <appender name="akka" class="ch.qos.logback.core.FileAppender">
+        <file>akka.log</file>
+        <encoder>
+            <pattern>%X{akkaTimestamp} %-5level %logger{36} %X{akkaSource} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="com.chessix" level="info"/>
 
     <logger name="com.chessix.vas.actors" level="info" additivity="false">
         <appender-ref ref="akka"/>
     </logger>
 
-	<root level="info">
-		<appender-ref ref="STDOUT" />
-		<appender-ref ref="ASYNC" />
-	</root>
+    <root level="info">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="ASYNC"/>
+    </root>
 </configuration>
 
