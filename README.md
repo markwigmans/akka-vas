@@ -1,5 +1,7 @@
 # akka-vas #
 
+The source code of the [blog article](http://www.chess-ix.com/blog/can-make-mysql-app-faster/ "Can you make my MySQL webapp faster?")
+
 This is a demonstrator of using [Reactive](http://www.reactivemanifesto.org/ "Reactive Manifesto") / [Lambda Architecture](http://lambda-architecture.net/ "Lambda Architecture") ideas with a toy version of an Account System.
 
 To use the application, perform the following steps:
