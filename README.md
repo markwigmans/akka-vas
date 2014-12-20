@@ -1,6 +1,6 @@
 # akka-vas #
 
-The source code of the [blog article](http://www.chess-ix.com/blog/can-make-mysql-app-faster/ "Can you make my MySQL webapp faster?")
+The source code belonging to the [blog article](http://www.chess-ix.com/blog/can-make-mysql-app-faster/ "Can you make my MySQL webapp faster?").
 
 This is a demonstrator of using [Reactive](http://www.reactivemanifesto.org/ "Reactive Manifesto") / [Lambda Architecture](http://lambda-architecture.net/ "Lambda Architecture") ideas with a toy version of an Account System.
 
@@ -22,7 +22,7 @@ Perform the following steps to create an executable jar:
 
 run application with:
 
-    java -jar target\vas-0.0.1-SNAPSHOT.jar
+    java -jar target\vas-<version>.jar
 
 ## Parameters ##
 

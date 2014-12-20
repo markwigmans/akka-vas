@@ -84,7 +84,7 @@ public class Balance {
             return this;
         }
 
-        public ResponseBuilder amount(final String message) {
+        public ResponseBuilder message(final String message) {
             this.message = message;
             return this;
         }
