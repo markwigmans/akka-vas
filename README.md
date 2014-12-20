@@ -22,7 +22,7 @@ Perform the following steps to create an executable jar:
 
 run application with:
 
-    java -jar target\vas-0.0.1-SNAPSHOT.jar
+    java -jar target\vas-<version>.jar
 
 ## Parameters ##
 
