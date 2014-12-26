@@ -13,15 +13,11 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 ******************************************************************************/
-package vas
+package vas 
 
-import com.excilys.ebi.gatling.core.Predef._
-import com.excilys.ebi.gatling.http.Predef._
-import com.excilys.ebi.gatling.jdbc.Predef._
-import com.excilys.ebi.gatling.http.Headers.Names._
-import akka.util.duration._
-import bootstrap._
-import assertions._
+import io.gatling.core.Predef._
+import io.gatling.http.Predef._
+import scala.concurrent.duration._
 
 import scala.util.Random
 

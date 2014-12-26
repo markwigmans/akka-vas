@@ -13,15 +13,11 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 ******************************************************************************/
-package vas
+package vas 
 
-import com.excilys.ebi.gatling.core.Predef._
-import com.excilys.ebi.gatling.http.Predef._
-import com.excilys.ebi.gatling.jdbc.Predef._
-import com.excilys.ebi.gatling.http.Headers.Names._
-import akka.util.duration._
-import bootstrap._
-import assertions._
+import io.gatling.core.Predef._
+import io.gatling.http.Predef._
+import scala.concurrent.duration._
 
 import scala.util.Random
 
@@ -35,8 +31,8 @@ class ReportSimulation extends Simulation {
   val validateChain = 
     repeat(Config.clas, "x") {
       exec(session => {
-        val clas = session.getTypedAttribute[Int]("x") + 1
-        session.setAttribute("clasId", Utils.clasID(clas))
+        val clas = session("x").as[Int]  + 1
+        session.set("clasId", Utils.clasID(clas))
       })
       .exec(http("validate speed layer").get("clas/${clasId}/validate/speed").check(status.is(200),jsonPath("$..successful").is("true")))
       .exec(http("validate batch layer").get("clas/${clasId}/validate/batch").check(status.is(200),jsonPath("$..successful").is("true")))
@@ -46,6 +42,6 @@ class ReportSimulation extends Simulation {
    val scn = scenario("Report").exec(stopChain,validateChain)
      
   setUp(
-    scn.users(1).protocolConfig(Config.httpConf)
+     scn.inject(atOnceUsers(1)).protocols(Config.httpConf)
   )
 }

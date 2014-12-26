@@ -13,15 +13,11 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 ******************************************************************************/
-package vas
+package vas 
 
-import com.excilys.ebi.gatling.core.Predef._
-import com.excilys.ebi.gatling.http.Predef._
-import com.excilys.ebi.gatling.jdbc.Predef._
-import com.excilys.ebi.gatling.http.Headers.Names._
-import akka.util.duration._
-import bootstrap._
-import assertions._
+import io.gatling.core.Predef._
+import io.gatling.http.Predef._
+import scala.concurrent.duration._
 
 import scala.util.Random
 
@@ -38,10 +34,10 @@ class LoadSimulation extends Simulation {
         val to     = Utils.randInt(1, Config.merchants + 1)
         val amount = Utils.randInt(1, 1000)
         session
-          .setAttribute("clasId", Utils.clasID(clas))
-          .setAttribute("from", from)
-          .setAttribute("to", to)
-          .setAttribute("amount", amount)
+          .set("clasId", Utils.clasID(clas))
+          .set("from", from)
+          .set("to", to)
+          .set("amount", amount)
       })
       .exec(http("transfer").post("transfer/${clasId}/${from}/${to}/${amount}").asJSON.check(status.is(200)))
     }
@@ -52,8 +48,8 @@ class LoadSimulation extends Simulation {
         val clas    = Utils.randInt(Config.clas) + 1
         val account = Utils.randInt(Config.merchants + Config.accounts) + 1
         session
-          .setAttribute("clasId", Utils.clasID(clas))
-          .setAttribute("accountId", account)
+          .set("clasId", Utils.clasID(clas))
+          .set("accountId", account)
       })
       .exec(http("balance").get("account/${clasId}/${accountId}/balance").asJSON.check(status.is(200)))
     }
@@ -62,7 +58,7 @@ class LoadSimulation extends Simulation {
   val balanceScn = scenario("Load Balance Test").exec(loadBalanceChain)
      
   setUp(
-    transferScn.users(Config.usersTransfer).ramp(Config.ramp).protocolConfig(Config.httpConf),
-    balanceScn.users(Config.usersBalance).ramp(Config.ramp).protocolConfig(Config.httpConf)
+    transferScn.inject(rampUsers(Config.usersTransfer) over(Config.ramp seconds)).protocols(Config.httpConf),
+    balanceScn.inject(rampUsers(Config.usersBalance) over(Config.ramp seconds)).protocols(Config.httpConf)
   )
 }

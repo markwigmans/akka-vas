@@ -13,15 +13,11 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 ******************************************************************************/
-package vas
+package vas 
 
-import com.excilys.ebi.gatling.core.Predef._
-import com.excilys.ebi.gatling.http.Predef._
-import com.excilys.ebi.gatling.jdbc.Predef._
-import com.excilys.ebi.gatling.http.Headers.Names._
-import akka.util.duration._
-import bootstrap._
-import assertions._
+import io.gatling.core.Predef._
+import io.gatling.http.Predef._
+import scala.concurrent.duration._
 
 /**
  * Configure the akka VAS simulation
@@ -29,7 +25,7 @@ import assertions._
 object Config {
 
   // URL of the System Under Test
-	val httpConf = httpConfig.baseURL("http://localhost:8080/")
+	val httpConf = http.baseURL("http://localhost:8080/")
  
   // number of classes
   val clas = 10
@@ -46,4 +42,4 @@ object Config {
   val runs = 10000
   // Ramp up of the simulation
   val ramp = 5
-}
+ }

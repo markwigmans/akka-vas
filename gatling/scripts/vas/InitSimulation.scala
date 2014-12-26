@@ -13,15 +13,11 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 ******************************************************************************/
-package vas
+package vas 
 
-import com.excilys.ebi.gatling.core.Predef._
-import com.excilys.ebi.gatling.http.Predef._
-import com.excilys.ebi.gatling.jdbc.Predef._
-import com.excilys.ebi.gatling.http.Headers.Names._
-import akka.util.duration._
-import bootstrap._
-import assertions._
+import io.gatling.core.Predef._
+import io.gatling.http.Predef._
+import scala.concurrent.duration._
 
 import scala.util.Random
 
@@ -33,8 +29,8 @@ class InitSimulation extends Simulation {
   val cleanChain = 
     repeat(Config.clas, "x") {
       exec(session => {
-        val clas = session.getTypedAttribute[Int]("x") + 1
-        session.setAttribute("clasId", Utils.clasID(clas))
+        val clas = session("x").as[Int]  + 1
+        session.set("clasId", Utils.clasID(clas))
       })
       .exec(http("clean clas").post("clas/${clasId}/clean").asJSON.check(status.is(200)))
     } 
@@ -42,8 +38,8 @@ class InitSimulation extends Simulation {
   val clasChain = 
     repeat(Config.clas, "x") {
       exec(session => {
-        val clas = session.getTypedAttribute[Int]("x") + 1
-        session.setAttribute("clasId", Utils.clasID(clas))
+        val clas = session("x").as[Int] + 1
+        session.set("clasId", Utils.clasID(clas))
       })
       .exec(http("create clas").post("clas/${clasId}").asJSON.check(status.is(200)))
     }
@@ -51,20 +47,20 @@ class InitSimulation extends Simulation {
   val accountChain =
     repeat(Config.clas, "x") {
       exec(session => {
-        val clas = session.getTypedAttribute[Int]("x") + 1
-        session.setAttribute("clasId", Utils.clasID(clas))
-          .setAttribute("start.accounts", Config.merchants + 1)
-          .setAttribute("start.merchants", 1)
-          .setAttribute("count.accounts", Config.accounts)
-          .setAttribute("count.merchants", Config.merchants)
+        val clas = session("x").as[Int] + 1
+        session.set("clasId", Utils.clasID(clas))
+          .set("startAccounts", Config.merchants + 1)
+          .set("startMerchants", 1)
+          .set("countAccounts", Config.accounts)
+          .set("countMerchants", Config.merchants)
       })
-      .exec(http("create merchants").post("account/${clasId}/range/from/${start.merchants}/count/${count.merchants}").asJSON.check(status.is(200)))
-      .exec(http("create accounts").post("account/${clasId}/range/from/${start.accounts}/count/${count.accounts}").asJSON.check(status.is(200)))
+      .exec(http("create merchants").post("account/${clasId}/range/from/${startMerchants}/count/${countMerchants}").asJSON.check(status.is(200)))
+      .exec(http("create accounts").post("account/${clasId}/range/from/${startAccounts}/count/${countAccounts}").asJSON.check(status.is(200)))
     }  
      
   val scn = scenario("Initialize").exec(cleanChain,clasChain,accountChain)
-     
+  
   setUp(
-    scn.users(1).protocolConfig(Config.httpConf)
+    scn.inject(atOnceUsers(1)).protocols(Config.httpConf)
   )      
 }
