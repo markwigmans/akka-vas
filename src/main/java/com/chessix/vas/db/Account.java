@@ -33,7 +33,7 @@ import javax.persistence.*;
 @ToString(exclude = "clas")
 public class Account extends BaseModel {
 
-    @ManyToOne(optional = false, cascade = CascadeType.ALL)
+    @ManyToOne(optional = false)
     @JoinColumn(name = "CLAS_ID", updatable = false, nullable = false)
     @NonNull
     private CLAS clas;

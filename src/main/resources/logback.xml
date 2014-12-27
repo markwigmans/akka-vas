@@ -16,7 +16,7 @@
     limitations under the License.
 -->
 
-<configuration>
+<configuration scan="true" debug="true">
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
@@ -26,7 +26,6 @@
             <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </layout>
     </appender>
-
 
     <appender name="FILE" class="ch.qos.logback.core.FileAppender">
         <file>server.log</file>
@@ -47,9 +46,9 @@
         </encoder>
     </appender>
 
-    <logger name="com.chessix" level="info"/>
+    <logger name="com.chessix" level="debug"/>
 
-    <logger name="com.chessix.vas.actors" level="info" additivity="false">
+    <logger name="com.chessix.vas.actors" level="debug" additivity="false">
         <appender-ref ref="akka"/>
     </logger>
 
