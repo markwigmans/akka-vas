@@ -22,7 +22,6 @@ import com.chessix.vas.actors.messages.CreateClas;
 import com.chessix.vas.actors.messages.JournalMessage;
 import com.chessix.vas.db.Account;
 import com.chessix.vas.db.DBService;
-import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,8 +31,10 @@ import org.springframework.stereotype.Service;
 import scala.concurrent.Await;
 import scala.concurrent.duration.Duration;
 
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static akka.pattern.Patterns.ask;
 
@@ -59,7 +60,7 @@ public class ClasService {
         this.storage = storage;
         this.dbService = dbService;
         this.journalActor = journalActor;
-        this.clasManager = Maps.newConcurrentMap();
+        this.clasManager = new ConcurrentHashMap<>();
     }
 
     /**
@@ -102,12 +103,16 @@ public class ClasService {
         do {
             log.debug("validate({}) : page: {}", clasId, page);
             accounts = dbService.findAccountsByClas(clasId, new PageRequest(page, PAGE_SIZE));
-            for (final Account account : accounts) {
-                total += account.getBalance();
-            }
-            page += 1;
+            total += accounts.getContent().stream().collect(Collectors.summingInt(Account::getBalance));
+            page++;
         } while (accounts.hasNext());
-        return total == 0;
+        final boolean insync = total == 0;
+        if (!insync) {
+            log.error("CLAS {} not in sync. total is: {}", clasId, total);
+        } else {
+            log.debug("CLAS {} in sync.", clasId);
+        }
+        return insync;
     }
 
     String getClasId(final String clasId) {

@@ -15,13 +15,12 @@
  ******************************************************************************/
 package com.chessix.vas.service;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Lists;
 import org.springframework.data.redis.core.BoundHashOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Redis storage version of the {@code ISpeedStorage} interface.
@@ -52,14 +51,7 @@ public class RedisStorage implements ISpeedStorage {
     @Override
     public List<Integer> accountValues(final String clasId) {
         final BoundHashOperations<String, Object, Object> ops = redisTemplate.boundHashOps(clasId);
-        final List<Object> values = ops.values();
-        return Lists.transform(values, new Function<Object, Integer>() {
-
-            @Override
-            public Integer apply(final Object input) {
-                return Integer.parseInt((String) input);
-            }
-        });
+        return ops.values().stream().map(v -> Integer.parseInt((String) v)).collect(Collectors.toList());
     }
 
     @Override

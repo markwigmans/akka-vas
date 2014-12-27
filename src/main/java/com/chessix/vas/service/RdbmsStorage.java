@@ -18,13 +18,13 @@ package com.chessix.vas.service;
 import com.chessix.vas.actors.messages.JournalMessage;
 import com.chessix.vas.db.Account;
 import com.chessix.vas.db.DBService;
-import com.google.common.base.Function;
-import com.google.common.collect.Lists;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * RDBMS/JPA storage version of the {@code ISpeedStorage} interface.
@@ -53,19 +53,12 @@ public class RdbmsStorage implements ISpeedStorage {
 
     @Override
     public List<Integer> accountValues(final String clasId) {
-        final List<Integer> result = Lists.newLinkedList();
+        final List<Integer> result = new LinkedList<>();
         int page = 0;
         Page<Account> accounts;
         do {
             accounts = dbService.findAccountsByClas(clasId, new PageRequest(page, PAGE_SIZE));
-            result.addAll(Lists.transform(accounts.getContent(), new Function<Account, Integer>() {
-
-                @Override
-                public Integer apply(final Account input) {
-                    return input.getBalance();
-                }
-            }));
-
+            result.addAll(accounts.getContent().stream().map(a -> a.getBalance()).collect(Collectors.toList()));
             page += 1;
         } while (accounts.hasNext());
 
