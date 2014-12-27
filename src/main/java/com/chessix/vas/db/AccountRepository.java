@@ -26,7 +26,7 @@ public interface AccountRepository extends PagingAndSortingRepository<Account, L
 
     Long countByClas(CLAS clas);
 
-    Page<Account> findByClas(CLAS clas, Pageable pageable);
+    Page<Account> findByClasOrderByExternalIdAsc(CLAS clas, Pageable pageable);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     Account findByClasAndExternalId(final CLAS clas, final String externalId);

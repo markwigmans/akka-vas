@@ -67,7 +67,7 @@ public class DBService {
         final CLAS clas = clasRepository.findByExternalId(message.getClasId());
         final Account from = accountRepository.findByClasAndExternalId(clas, message.getFromAccountId());
         final Account to = accountRepository.findByClasAndExternalId(clas, message.getToAccountId());
-        transactionRepository.save(new Transaction(clas, from, to, message.getAmount(), message.getTimestamp()));
+        transactionRepository.save(new Transaction(clas, from, to, message.getAmount(), BaseModel.fromLocalDateTime(message.getTimestamp())));
         from.setBalance(from.getBalance() - message.getAmount());
         to.setBalance(to.getBalance() + message.getAmount());
         accountRepository.save(from);
@@ -92,7 +92,7 @@ public class DBService {
     @Transactional(readOnly = true)
     public Page<Account> findAccountsByClas(final String clasId, final PageRequest pageRequest) {
         final CLAS clas = clasRepository.findByExternalId(clasId);
-        return accountRepository.findByClas(clas, pageRequest);
+        return accountRepository.findByClasOrderByExternalIdAsc(clas, pageRequest);
     }
 
     @Transactional(readOnly = true)

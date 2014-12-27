@@ -22,6 +22,9 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.Date;
 
 /**
  * The base for JPA entities.
@@ -43,4 +46,8 @@ public abstract class BaseModel implements Serializable {
     @Getter
     @Setter(AccessLevel.PRIVATE)
     private int version;
+
+    public static Date fromLocalDateTime(final LocalDateTime date) {
+        return Date.from(date.toInstant(ZoneOffset.UTC));
+    }
 }

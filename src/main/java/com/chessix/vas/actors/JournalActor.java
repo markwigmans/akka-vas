@@ -25,11 +25,9 @@ import com.chessix.vas.actors.messages.JournalMessage.ClasCreated;
 import com.chessix.vas.actors.messages.JournalMessage.Transfer;
 import com.chessix.vas.actors.messages.Ready;
 import com.chessix.vas.db.DBService;
-import org.joda.time.DateTime;
-import org.joda.time.Duration;
-import org.joda.time.Interval;
 
-import java.util.Date;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 /**
@@ -96,8 +94,8 @@ public class JournalActor extends UntypedActor {
     /**
      * Update the time delay between creation of the message and processing it.
      */
-    private void updateTimeDelay(final Date timestamp) {
-        final Duration d = new Interval(new DateTime(timestamp), DateTime.now()).toDuration();
+    private void updateTimeDelay(final LocalDateTime timestamp) {
+        final Duration d = Duration.between(timestamp, LocalDateTime.now());
         if ((!delay.isPresent()) || (d.compareTo(delay.get()) > 0)) {
             delay = Optional.of(d);
         }

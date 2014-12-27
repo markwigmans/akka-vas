@@ -21,7 +21,7 @@ import lombok.Getter;
 import lombok.ToString;
 import lombok.experimental.FieldDefaults;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 
 /**
@@ -34,7 +34,7 @@ public class JournalMessage {
     @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
     public static final class ClasCreated {
         @Getter
-        Date timestamp;
+        LocalDateTime timestamp;
         @Getter
         String clasId;
 
@@ -49,7 +49,7 @@ public class JournalMessage {
     @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
     public static final class AccountCreated {
         @Getter
-        Date timestamp;
+        LocalDateTime timestamp;
         @Getter
         String clasId;
         @Getter
@@ -67,7 +67,7 @@ public class JournalMessage {
     @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
     public static final class Transfer {
         @Getter
-        Date timestamp;
+        LocalDateTime timestamp;
         @Getter
         String clasId;
         @Getter
@@ -91,7 +91,7 @@ public class JournalMessage {
     @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
     public static final class Clean {
         @Getter
-        Date timestamp;
+        LocalDateTime timestamp;
         @Getter
         String clasId;
 
@@ -103,11 +103,11 @@ public class JournalMessage {
 
     public static class ClasCreatedBuilder implements Builder<ClasCreated> {
         private String clasId;
-        private Date timestamp;
+        private LocalDateTime timestamp;
 
         public ClasCreatedBuilder(final String clasId) {
             this.clasId = clasId;
-            this.timestamp = new Date();
+            this.timestamp = LocalDateTime.now();
         }
 
         public ClasCreated build() {
@@ -118,12 +118,12 @@ public class JournalMessage {
     public static class AccountCreatedBuilder implements Builder<AccountCreated> {
         private String clasId;
         private String accountId;
-        private Date timestamp;
+        private LocalDateTime timestamp;
 
         public AccountCreatedBuilder(final String clasId, final String accountId) {
             this.clasId = clasId;
             this.accountId = accountId;
-            this.timestamp = new Date();
+            this.timestamp = LocalDateTime.now();
         }
 
         public AccountCreated build() {
@@ -136,14 +136,14 @@ public class JournalMessage {
         private String fromAccountId;
         private String toAccountId;
         private int amount;
-        private Date timestamp;
+        private LocalDateTime timestamp;
 
         public TransferBuilder(final String clasId, final String fromAccountId, final String toAccountId, final int amount) {
             this.clasId = clasId;
             this.fromAccountId = fromAccountId;
             this.toAccountId = toAccountId;
             this.amount = amount;
-            this.timestamp = new Date();
+            this.timestamp = LocalDateTime.now();
         }
 
         public Transfer build() {
@@ -153,11 +153,11 @@ public class JournalMessage {
 
     public static class CleanBuilder implements Builder<Clean> {
         private String clasId;
-        private Date timestamp;
+        private LocalDateTime timestamp;
 
         public CleanBuilder(final String clasId) {
             this.clasId = clasId;
-            this.timestamp = new Date();
+            this.timestamp = LocalDateTime.now();
         }
 
         public Clean build() {
