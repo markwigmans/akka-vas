@@ -20,6 +20,7 @@ import akka.actor.ActorSystem;
 import com.chessix.vas.actors.JournalActor;
 import com.chessix.vas.actors.NullJournalActor;
 import com.chessix.vas.db.DBService;
+import com.chessix.vas.service.HazelcastStorage;
 import com.chessix.vas.service.ISpeedStorage;
 import com.chessix.vas.service.RdbmsStorage;
 import com.chessix.vas.service.RedisStorage;
@@ -52,6 +53,9 @@ public class Application {
     @Value("${vas.async:true}")
     private boolean async;
 
+    @Value("${vas.async.strategy:H}")
+    private String asyncStrategy;
+
     /**
      * Start the whole application
      */
@@ -72,8 +76,15 @@ public class Application {
     @Bean
     ISpeedStorage speedStorage() {
         if (async) {
-            log.debug("Redis speed storage");
-            return new RedisStorage(redisTemplate);
+            switch (asyncStrategy) {
+                case "R":
+                    log.debug("Redis speed storage");
+                    return new RedisStorage(redisTemplate);
+                case "H":
+                default:
+                    log.debug("Hazelcast speed storage");
+                    return new HazelcastStorage();
+            }
         } else {
             log.debug("RDBMS speed storage");
             return new RdbmsStorage(dbService);
@@ -83,10 +94,10 @@ public class Application {
     @Bean
     ActorRef batchStorage() {
         if (async) {
-            log.debug("RDBMS batch storage");
+            log.info("RDBMS batch storage");
             return actorSystem.actorOf(JournalActor.props(dbService), "Journalizer");
         } else {
-            log.debug("Dummy batch storage");
+            log.info("Dummy batch storage");
             return actorSystem.actorOf(NullJournalActor.props(), "Dummy-Journalizer");
         }
     }
