@@ -1,2 +1,2 @@
-call mvn package -DskipTests
-java -jar target\vas-1.0.1.jar
+rem call mvn package -DskipTests
+java -jar target\vas-1.1.jar
