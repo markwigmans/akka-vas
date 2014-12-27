@@ -21,6 +21,8 @@ import lombok.Getter;
 import lombok.ToString;
 import lombok.experimental.FieldDefaults;
 
+import java.util.Optional;
+
 /**
  * Transfer amount between two accounts
  *
@@ -79,8 +81,8 @@ public class Balance {
             this.successful = successful;
         }
 
-        public ResponseBuilder amount(final Integer amount) {
-            this.amount = amount;
+        public ResponseBuilder amount(final Optional<Integer> amount) {
+            this.amount = amount.orElse(null);
             return this;
         }
 

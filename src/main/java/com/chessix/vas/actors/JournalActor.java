@@ -30,6 +30,7 @@ import org.joda.time.Duration;
 import org.joda.time.Interval;
 
 import java.util.Date;
+import java.util.Optional;
 
 /**
  * @author Mark Wigmans
@@ -39,8 +40,7 @@ public class JournalActor extends UntypedActor {
     private final LoggingAdapter log = Logging.getLogger(getContext().system(), this);
 
     private final DBService service;
-
-    private Duration delay;
+    private Optional<Duration> delay;
 
     /**
      * Constructor
@@ -48,7 +48,7 @@ public class JournalActor extends UntypedActor {
     private JournalActor(final DBService service) {
         super();
         this.service = service;
-        this.delay = null;
+        this.delay = Optional.empty();
     }
 
     public static Props props(final DBService service) {
@@ -98,8 +98,8 @@ public class JournalActor extends UntypedActor {
      */
     private void updateTimeDelay(final Date timestamp) {
         final Duration d = new Interval(new DateTime(timestamp), DateTime.now()).toDuration();
-        if ((delay == null) || (d.compareTo(delay) > 0)) {
-            delay = d;
+        if ((!delay.isPresent()) || (d.compareTo(delay.get()) > 0)) {
+            delay = Optional.of(d);
         }
     }
 }

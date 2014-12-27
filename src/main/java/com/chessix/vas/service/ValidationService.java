@@ -29,6 +29,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import scala.concurrent.Await;
 
+import java.util.Optional;
+
 @Service
 @Slf4j
 public class ValidationService {
@@ -63,8 +65,8 @@ public class ValidationService {
             log.debug("validate({}) : page: {}", clasId, page);
             accounts = dbService.findAccountsByClas(clasId, new PageRequest(page, PAGE_SIZE));
             for (final Account account : accounts) {
-                final Integer speed = balance(clasId, account.getExternalId());
-                final boolean compare = ObjectUtils.compare(speed, account.getBalance()) == 0;
+                final Optional<Integer> speed = balance(clasId, account.getExternalId());
+                final boolean compare = speed.isPresent() && ObjectUtils.compare(speed.get(), account.getBalance()) == 0;
                 if (!compare) {
                     log.warn("account {}/{} is out of sync. speed/batch = {}/{}", clasId, account.getExternalId(), speed, account.getBalance());
                 }
@@ -75,7 +77,7 @@ public class ValidationService {
         return result;
     }
 
-    private Integer balance(final String clasId, final String accountId) {
+    private Optional<Integer> balance(final String clasId, final String accountId) {
         return speedStorage.get(clasId, accountId);
     }
 }

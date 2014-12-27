@@ -24,6 +24,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * RDBMS/JPA storage version of the {@code ISpeedStorage} interface.
@@ -42,12 +43,12 @@ public class RdbmsStorage implements ISpeedStorage {
     }
 
     @Override
-    public Integer get(final String clasId, final String accountId) {
-        final Account account = dbService.findAccount(clasId, accountId);
-        if (account != null) {
-            return account.getBalance();
+    public Optional<Integer> get(final String clasId, final String accountId) {
+        final Optional<Account> account = dbService.findAccount(clasId, accountId);
+        if (account.isPresent()) {
+            return Optional.of(account.get().getBalance());
         }
-        return null;
+        return Optional.empty();
     }
 
     @Override
@@ -72,7 +73,7 @@ public class RdbmsStorage implements ISpeedStorage {
     }
 
     @Override
-    public Long size(final String clasId) {
+    public long size(final String clasId) {
         return dbService.count(clasId);
     }
 

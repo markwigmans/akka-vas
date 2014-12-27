@@ -26,6 +26,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 /**
  * Service to do the actual RDBMS actions.
  *
@@ -73,14 +75,18 @@ public class DBService {
     }
 
     public void clean(final Clean message) {
-        log.debug("clean({})", message);
+        log.debug("starting clean({})", message);
         final CLAS clas = clasRepository.findByExternalId(message.getClasId());
         if (clas != null) {
             // there is data
-            transactionRepository.deleteClasTransactions(clas);
-            accountRepository.deleteClasAccounts(clas);
+            log.debug("clean({}) : transactions", message);
+            transactionRepository.deleteByClas(clas);
+            log.debug("clean({}) : accounts", message);
+            accountRepository.deleteByClas(clas);
+            log.debug("clean({}) : clas", message);
             clasRepository.delete(clas);
         }
+        log.debug("stop clean({})", message);
     }
 
     @Transactional(readOnly = true)
@@ -90,13 +96,13 @@ public class DBService {
     }
 
     @Transactional(readOnly = true)
-    public Account findAccount(final String clasId, final String accountId) {
+    public Optional<Account> findAccount(final String clasId, final String accountId) {
         final CLAS clas = clasRepository.findByExternalId(clasId);
-        return accountRepository.findByClasAndExternalId(clas, accountId);
+        return Optional.ofNullable(accountRepository.findByClasAndExternalId(clas, accountId));
     }
 
     @Transactional(readOnly = true)
-    public Long count(final String clasId) {
+    public long count(final String clasId) {
         final CLAS clas = clasRepository.findByExternalId(clasId);
         return accountRepository.countByClas(clas);
     }

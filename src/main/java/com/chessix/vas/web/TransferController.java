@@ -22,7 +22,6 @@ import akka.dispatch.OnSuccess;
 import akka.pattern.Patterns;
 import akka.util.Timeout;
 import com.chessix.vas.actors.messages.Transfer;
-import com.chessix.vas.dto.TransferDTO;
 import com.chessix.vas.service.AccountService;
 import com.chessix.vas.service.ClasService;
 import lombok.extern.slf4j.Slf4j;
@@ -65,28 +64,27 @@ public class TransferController {
                                            @PathVariable final String to, @PathVariable final int amount) {
         log.debug("transfer({},{},{},{})", clasId, from, to, amount);
         final ActorRef clas = clasService.getClas(clasId);
-        final DeferredResult<Object> deferredResult = new DeferredResult<Object>();
-        if (clas != null) {
-            final ExecutionContext ec = actorSystem.dispatcher();
-            final Future<Object> future = Patterns.ask(clas, new Transfer.RequestBuilder(accountService.getAccountId(from),
-                    accountService.getAccountId(to), amount).build(), timeout);
-            future.onSuccess(new OnSuccess<Object>() {
-                @Override
-                public void onSuccess(final Object result) {
-                    log.info("transfer({},{},{},{}) : result: {}", clasId, from, to, amount, result);
-                    deferredResult.setResult(result);
-                }
-            }, ec);
-            future.onFailure(new OnFailure() {
-                @Override
-                public void onFailure(final Throwable arg) throws Throwable {
-                    log.error("onFailure", arg);
-                    deferredResult.setErrorResult(arg);
-                }
-            }, ec);
-        } else {
-            deferredResult.setErrorResult(new TransferDTO(clasId, from, to, false, "CLAS does not exist"));
-        }
+        final DeferredResult<Object> deferredResult = new DeferredResult<>();
+        final ExecutionContext ec = actorSystem.dispatcher();
+        final Future<Object> future = Patterns.ask(clas,
+                new Transfer.RequestBuilder(accountService.getAccountId(from), accountService.getAccountId(to), amount).build(), timeout);
+
+        future.onSuccess(new OnSuccess<Object>() {
+            @Override
+            public void onSuccess(final Object result) {
+                log.info("transfer({},{},{},{}) : result: {}", clasId, from, to, amount, result);
+                deferredResult.setResult(result);
+            }
+        }, ec);
+
+        future.onFailure(new OnFailure() {
+            @Override
+            public void onFailure(final Throwable arg) throws Throwable {
+                log.error("onFailure", arg);
+                deferredResult.setErrorResult(arg);
+            }
+        }, ec);
+
         return deferredResult;
     }
 }

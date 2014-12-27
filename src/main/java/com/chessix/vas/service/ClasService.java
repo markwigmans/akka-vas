@@ -71,12 +71,11 @@ public class ClasService {
     public synchronized boolean create(final String clasId) {
         log.debug("create({})", clasId);
         final String clasName = getClasId(clasId);
-        if (getClas(clasName) == null || storage.size(clasName) == 0) {
+        if (storage.isEmpty(clasName)) {
             log.debug("create({}) : newly", clasId);
             journalActor.tell(new JournalMessage.ClasCreatedBuilder(clasName).build(), ActorRef.noSender());
 
-            final ActorRef clas = getClas(clasName) != null ? getClas(clasName) : system.actorOf(
-                    ClasActor.props(clasName, accountLength, journalActor, storage), clasActorName(clasName));
+            final ActorRef clas = getClas(clasName);
             final Duration timeout = Duration.create(1, TimeUnit.SECONDS);
             try {
                 Await.result(ask(clas, new CreateClas.RequestBuilder(clasId).build(), timeout.toMillis()), timeout);
@@ -123,9 +122,10 @@ public class ClasService {
         log.debug("getClas({})", clasId);
         final String clasName = getClasId(clasId);
         if (!clasManager.containsKey(clasName)) {
-            ActorRef clas = null;
+            final ActorRef clas;
             // make sure that only 1 thread creates the clas actor.
             synchronized (this.clasManager) {
+                // check again, it might be changed after we get the lock
                 if (!clasManager.containsKey(clasName)) {
                     log.debug("getClas({}) : create clas actor", clasId);
                     clas = system.actorOf(ClasActor.props(clasName, accountLength, journalActor, storage),

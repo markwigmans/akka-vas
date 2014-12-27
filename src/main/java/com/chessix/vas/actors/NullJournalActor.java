@@ -38,7 +38,7 @@ public class NullJournalActor extends UntypedActor {
 
     @Override
     public void onReceive(final Object message) throws Exception {
-        log.debug("Received message: {}", message);
+        log.info("Received message: {}", message);
         if (message instanceof Ready.Request) {
             getSender().tell(new Ready.ResponseBuilder(true).build(), getSelf());
         }

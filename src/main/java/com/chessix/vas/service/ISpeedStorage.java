@@ -15,7 +15,8 @@
  ******************************************************************************/
 package com.chessix.vas.service;
 
-import java.util.List;
+import java.util.Collection;
+import java.util.Optional;
 
 /**
  * Interface to the speed layer of the lambda architecture
@@ -24,17 +25,21 @@ public interface ISpeedStorage {
     /**
      * Get the value for the given {@code classId} and {@code accountId}.
      */
-    Integer get(String clasId, String accountId);
+    Optional<Integer> get(String clasId, String accountId);
 
     /**
      * Get all the balance values for the given {@code classId}.
      */
-    List<Integer> accountValues(String clasId);
+    Collection<Integer> accountValues(String clasId);
 
     /**
      * Number of records of given {@code classId}.
      */
-    Long size(String clasId);
+    long size(String clasId);
+
+    default boolean isEmpty(final String clasId) {
+        return size(clasId) == 0;
+    }
 
     /**
      * Transfer {@code value} amount between given accounts.

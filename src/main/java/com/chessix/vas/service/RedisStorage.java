@@ -21,6 +21,7 @@ import org.springframework.data.redis.core.BoundHashOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Redis storage version of the {@code ISpeedStorage} interface.
@@ -37,14 +38,14 @@ public class RedisStorage implements ISpeedStorage {
     }
 
     @Override
-    public Integer get(final String clasId, final String accountId) {
+    public Optional<Integer> get(final String clasId, final String accountId) {
         final BoundHashOperations<String, Object, Object> ops = redisTemplate.boundHashOps(clasId);
         final String value = (String) ops.get(accountId);
 
         if (value != null) {
-            return Integer.parseInt(value);
+            return Optional.of(Integer.parseInt(value));
         } else {
-            return null;
+            return Optional.empty();
         }
     }
 
@@ -62,7 +63,7 @@ public class RedisStorage implements ISpeedStorage {
     }
 
     @Override
-    public Long size(final String clasId) {
+    public long size(final String clasId) {
         final BoundHashOperations<String, Object, Object> ops = redisTemplate.boundHashOps(clasId);
         return ops.size();
     }

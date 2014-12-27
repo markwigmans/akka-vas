@@ -88,26 +88,22 @@ public class ClasController {
 
         batchStorage.tell(new JournalMessage.CleanBuilder(clasId).build(), ActorRef.noSender());
 
-        final DeferredResult<Object> deferredResult = new DeferredResult<Object>();
+        final DeferredResult<Object> deferredResult = new DeferredResult<>();
         final ActorRef clas = clasService.getClas(clasId);
-        if (clas != null) {
-            // there is data
-            final Future<Object> future = Patterns.ask(clas, new Clean.RequestBuilder(clasId).build(), timeout);
-            future.onComplete(new OnComplete<Object>() {
-                @Override
-                public void onComplete(final Throwable failure, final Object result) {
-                    if (failure != null) {
-                        // We got a failure, handle it here
-                        deferredResult.setErrorResult(failure);
-                    } else {
-                        // We got a result, do something with it
-                        deferredResult.setResult(result);
-                    }
+        final Future<Object> future = Patterns.ask(clas, new Clean.RequestBuilder(clasId).build(), timeout);
+
+        future.onComplete(new OnComplete<Object>() {
+            @Override
+            public void onComplete(final Throwable failure, final Object result) {
+                if (failure != null) {
+                    // We got a failure, handle it here
+                    deferredResult.setErrorResult(failure);
+                } else {
+                    // We got a result, do something with it
+                    deferredResult.setResult(result);
                 }
-            }, system.dispatcher());
-        } else {
-            deferredResult.setResult(new Clean.ResponseBuilder(true).clasId(clasId).message("Clas was already removed").build());
-        }
+            }
+        }, system.dispatcher());
 
         return deferredResult;
     }
@@ -119,25 +115,22 @@ public class ClasController {
     public DeferredResult<Object> count(@PathVariable final String clasId) {
         log.debug("count({})", clasId);
 
-        final DeferredResult<Object> deferredResult = new DeferredResult<Object>();
+        final DeferredResult<Object> deferredResult = new DeferredResult<>();
         final ActorRef clas = clasService.getClas(clasId);
-        if (clas != null) {
-            final Future<Object> future = Patterns.ask(clas, new Count.RequestBuilder(clasId).build(), timeout);
-            future.onComplete(new OnComplete<Object>() {
-                @Override
-                public void onComplete(final Throwable failure, final Object result) {
-                    if (failure != null) {
-                        // We got a failure, handle it here
-                        deferredResult.setErrorResult(failure);
-                    } else {
-                        // We got a result, do something with it
-                        deferredResult.setResult(result);
-                    }
+        final Future<Object> future = Patterns.ask(clas, new Count.RequestBuilder(clasId).build(), timeout);
+
+        future.onComplete(new OnComplete<Object>() {
+            @Override
+            public void onComplete(final Throwable failure, final Object result) {
+                if (failure != null) {
+                    // We got a failure, handle it here
+                    deferredResult.setErrorResult(failure);
+                } else {
+                    // We got a result, do something with it
+                    deferredResult.setResult(result);
                 }
-            }, system.dispatcher());
-        } else {
-            deferredResult.setResult(new Count.ResponseBuilder(false).clasId(clasId).message("CLAS does not exist").build());
-        }
+            }
+        }, system.dispatcher());
 
         return deferredResult;
     }
@@ -149,25 +142,22 @@ public class ClasController {
     public DeferredResult<Object> validateSpeedLayer(@PathVariable final String clasId) {
         log.debug("fastValidate({})", clasId);
 
-        final DeferredResult<Object> deferredResult = new DeferredResult<Object>();
+        final DeferredResult<Object> deferredResult = new DeferredResult<>();
         final ActorRef clas = clasService.getClas(clasId);
-        if (clas != null) {
-            final Future<Object> future = Patterns.ask(clas, new Validate.RequestBuilder(clasId).build(), timeout);
-            future.onComplete(new OnComplete<Object>() {
-                @Override
-                public void onComplete(final Throwable failure, final Object result) {
-                    if (failure != null) {
-                        // We got a failure, handle it here
-                        deferredResult.setErrorResult(failure);
-                    } else {
-                        // We got a result, do something with it
-                        deferredResult.setResult(result);
-                    }
+        final Future<Object> future = Patterns.ask(clas, new Validate.RequestBuilder(clasId).build(), timeout);
+
+        future.onComplete(new OnComplete<Object>() {
+            @Override
+            public void onComplete(final Throwable failure, final Object result) {
+                if (failure != null) {
+                    // We got a failure, handle it here
+                    deferredResult.setErrorResult(failure);
+                } else {
+                    // We got a result, do something with it
+                    deferredResult.setResult(result);
                 }
-            }, system.dispatcher());
-        } else {
-            deferredResult.setResult(new Validate.ResponseBuilder(false).clasId(clasId).message("CLAS does not exist").build());
-        }
+            }
+        }, system.dispatcher());
 
         return deferredResult;
     }
