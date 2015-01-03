@@ -15,6 +15,6 @@
  ******************************************************************************/
 
 /**
- * Lambda Architecture Batch layer
+ * @see <a http="https://storm.apache.org/">Apache Storm</a>
  */
-package com.chessix.vas.db;
+package com.chessix.vas.storm;
