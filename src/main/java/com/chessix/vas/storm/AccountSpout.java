@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 
 /**
- * Created by mawi on 31-12-2014.
+ *
  */
 @Slf4j
 public class AccountSpout extends BaseHazelcastSpout {

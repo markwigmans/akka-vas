@@ -3,8 +3,6 @@ package com.chessix.vas.actors.messages;
 import akka.serialization.Serialization;
 import akka.util.ByteString;
 
-import java.io.Serializable;
-
 /**
  *
  */

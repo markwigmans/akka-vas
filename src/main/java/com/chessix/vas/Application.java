@@ -19,7 +19,6 @@ import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
 import akka.routing.DefaultResizer;
-import akka.routing.RoundRobinPool;
 import akka.routing.SmallestMailboxPool;
 import backtype.storm.LocalCluster;
 import com.chessix.vas.actors.JournalActor;
@@ -154,7 +153,9 @@ public class Application {
                 new SmallestMailboxPool(connectorPoolLowerSize).withResizer(resizer).props(props), "storm-router");
     }
 
-
+    /**
+     *
+     */
     private static class MvcConfig extends WebMvcConfigurerAdapter {
 
         @Override

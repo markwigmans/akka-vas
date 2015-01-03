@@ -19,12 +19,9 @@ import akka.actor.*;
 import akka.actor.SupervisorStrategy.Directive;
 import akka.japi.Function;
 import akka.routing.DefaultResizer;
-import akka.routing.RoundRobinPool;
 import akka.routing.SmallestMailboxPool;
 import com.chessix.vas.service.ISpeedStorage;
 import scala.concurrent.duration.Duration;
-
-import java.io.Serializable;
 
 /**
  *
