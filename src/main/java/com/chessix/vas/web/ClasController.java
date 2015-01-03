@@ -40,7 +40,7 @@ import scala.concurrent.duration.Duration;
 import java.util.concurrent.TimeUnit;
 
 /**
- * @author Mark Wigmans
+ *
  */
 @RestController
 @RequestMapping(value = "/clas")
@@ -49,7 +49,7 @@ public class ClasController {
 
     private final ActorSystem system;
     private final ClasService clasService;
-    private final ActorRef batchStorage;
+    private final ActorRef journalActor;
     private final ValidationService validationService;
 
     private final Timeout timeout = new Timeout(Duration.create(1, TimeUnit.MINUTES));
@@ -58,11 +58,11 @@ public class ClasController {
      * Auto wired constructor
      */
     @Autowired
-    public ClasController(final ActorSystem system, final ClasService clasService, final ActorRef batchStorage, final ValidationService validationService) {
+    public ClasController(final ActorSystem system, final ClasService clasService, final ActorRef journalActor, final ValidationService validationService) {
         super();
         this.system = system;
         this.clasService = clasService;
-        this.batchStorage = batchStorage;
+        this.journalActor = journalActor;
         this.validationService = validationService;
     }
 
@@ -86,7 +86,7 @@ public class ClasController {
     public DeferredResult<Object> clean(@PathVariable final String clasId) {
         log.debug("clean({})", clasId);
 
-        batchStorage.tell(new JournalMessage.CleanBuilder(clasId).build(), ActorRef.noSender());
+        journalActor.tell(new JournalMessage.CleanBuilder(clasId).build(), ActorRef.noSender());
 
         final DeferredResult<Object> deferredResult = new DeferredResult<>();
         final ActorRef clas = clasService.getClas(clasId);

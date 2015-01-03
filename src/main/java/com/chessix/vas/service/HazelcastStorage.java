@@ -15,8 +15,6 @@
  ******************************************************************************/
 package com.chessix.vas.service;
 
-import com.hazelcast.config.Config;
-import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import lombok.extern.slf4j.Slf4j;
@@ -35,9 +33,11 @@ public class HazelcastStorage implements ISpeedStorage {
 
     private final HazelcastInstance instance;
 
-    public HazelcastStorage() {
-        final Config cfg = new Config();
-        this.instance = Hazelcast.newHazelcastInstance(cfg);
+    /**
+     *
+     */
+    public HazelcastStorage(HazelcastInstance hzInstance) {
+        this.instance = hzInstance;
     }
 
     private IMap<String, Integer> getClas(final String clasId) {
@@ -64,7 +64,7 @@ public class HazelcastStorage implements ISpeedStorage {
     }
 
     @Override
-    public boolean isEmpty(String clasId) {
+    public boolean isEmpty(final String clasId) {
         final Map<String, Integer> clas = getClas(clasId);
         return clas.values().isEmpty();
     }
@@ -76,9 +76,6 @@ public class HazelcastStorage implements ISpeedStorage {
             if (lock.tryLock(10, TimeUnit.SECONDS)) {
                 try {
                     final IMap<String, Integer> clas = getClas(clasId);
-                    final Integer valueFrom = clas.get(fromAccountId);
-                    final Integer toFrom = clas.get(toAccountId);
-
                     clas.compute(fromAccountId, (k, v) -> v - value);
                     clas.compute(toAccountId, (k, v) -> v + value);
                 } finally {
@@ -88,7 +85,7 @@ public class HazelcastStorage implements ISpeedStorage {
                 log.warn("Lock couldn't acquired");
             }
         } catch (InterruptedException e) {
-            log.info("Interrupted");
+            log.info("Interrupted: {}", e.toString());
         }
     }
 
@@ -107,7 +104,7 @@ public class HazelcastStorage implements ISpeedStorage {
     }
 
     @Override
-    public void delete(String clasId) {
+    public void delete(final String clasId) {
         final IMap<String, Integer> clas = getClas(clasId);
         clas.clear();
     }

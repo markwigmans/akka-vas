@@ -22,7 +22,7 @@ import akka.event.LoggingAdapter;
 import com.chessix.vas.actors.messages.Ready;
 
 /**
- * A journal
+ * A journalizer that doesn't do much
  */
 public class NullJournalActor extends UntypedActor {
 
@@ -38,7 +38,7 @@ public class NullJournalActor extends UntypedActor {
 
     @Override
     public void onReceive(final Object message) throws Exception {
-        log.info("Received message: {}", message);
+        log.debug("Received message: {}", message);
         if (message instanceof Ready.Request) {
             getSender().tell(new Ready.ResponseBuilder(true).build(), getSelf());
         }

@@ -39,18 +39,18 @@ public class ValidationService {
 
     private final ISpeedStorage speedStorage;
     private final DBService dbService;
-    private final ActorRef batchStorage;
+    private final ActorRef journalActor;
 
     @Autowired
-    public ValidationService(final ClasService clasService, final ISpeedStorage speedStorage, final ActorRef batchStorage, final DBService dbService) {
+    public ValidationService(final ClasService clasService, final ISpeedStorage speedStorage, final ActorRef journalActor, final DBService dbService) {
         super();
         this.speedStorage = speedStorage;
         this.dbService = dbService;
-        this.batchStorage = batchStorage;
+        this.journalActor = journalActor;
     }
 
     public Object prepare(final Timeout timeout) throws Exception {
-        return Await.result(Patterns.ask(batchStorage, new Ready.RequestBuilder(true).build(), timeout), timeout.duration());
+        return Await.result(Patterns.ask(journalActor, new Ready.RequestBuilder(true).build(), timeout), timeout.duration());
     }
 
     /**

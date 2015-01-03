@@ -15,28 +15,33 @@
  ******************************************************************************/
 package com.chessix.vas.actors.messages;
 
-import lombok.AccessLevel;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.ToString;
+import akka.serialization.Serialization;
+import akka.util.ByteString;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 /**
  * Count the number of records
- *
- * @author Mark Wigmans
  */
 public class Count {
 
     @ToString
-    @EqualsAndHashCode
+    @EqualsAndHashCode(callSuper = false)
     @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
-    public static final class Request {
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    public static final class Request extends ZeroMQMessage<Request> {
+        private static final long serialVersionUID = 5334898878450448273L;
         @Getter
         private final String clasId;
 
         private Request(final RequestBuilder requestBuilder) {
+            super(Request.class);
             this.clasId = requestBuilder.clasId;
+        }
+
+        @Override
+        public ByteString payload(final Serialization ser) {
+            return ByteString.fromArray(ser.serialize(new Request(clasId)).get());
         }
     }
 

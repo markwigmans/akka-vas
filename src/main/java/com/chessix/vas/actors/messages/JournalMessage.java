@@ -25,9 +25,9 @@ import java.time.LocalDateTime;
 
 
 /**
- * @author Mark Wigmans
+ *
  */
-public class JournalMessage {
+public abstract class JournalMessage {
 
     @ToString
     @EqualsAndHashCode

@@ -15,31 +15,36 @@
  ******************************************************************************/
 package com.chessix.vas.actors.messages;
 
-import lombok.AccessLevel;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.ToString;
+import akka.serialization.Serialization;
+import akka.util.ByteString;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 /**
  * Create a new VAS account
- *
- * @author Mark Wigmans
  */
-public class CreateAccount {
+public abstract class CreateAccount {
 
     @ToString
-    @EqualsAndHashCode
+    @EqualsAndHashCode(callSuper = false)
     @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
-    public static final class Request {
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    public static final class Request extends ZeroMQMessage<Request> {
+        private static final long serialVersionUID = 2004621081458051402L;
         @Getter
         String clasId;
         @Getter
         String accountId;
 
         private Request(final RequestBuilder requestBuilder) {
+            super(Request.class);
             this.clasId = requestBuilder.clasId;
             this.accountId = requestBuilder.accountId;
+        }
+
+        @Override
+        public ByteString payload(final Serialization ser) {
+            return ByteString.fromArray(ser.serialize(new Request(clasId, accountId)).get());
         }
     }
 

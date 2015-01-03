@@ -22,10 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * @author Mark Wigmans
- * @see <a
- * href="http://www.journaldev.com/2676/spring-mvc-interceptors-example-handlerinterceptor-and-handlerinterceptoradapter">Interceptor
- * example</a>
+ * @see <a href="http://www.journaldev.com/2676/spring-mvc-interceptors-example-handlerinterceptor-and-handlerinterceptoradapter">Interceptor example</a>
  */
 @Slf4j
 public class RequestProcessingTimeInterceptor extends HandlerInterceptorAdapter {

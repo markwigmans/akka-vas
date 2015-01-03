@@ -31,7 +31,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 /**
- * @author Mark Wigmans
+ *
  */
 public class JournalActor extends UntypedActor {
 
@@ -44,7 +44,6 @@ public class JournalActor extends UntypedActor {
      * Constructor
      */
     private JournalActor(final DBService service) {
-        super();
         this.service = service;
         this.delay = Optional.empty();
     }
@@ -56,12 +55,12 @@ public class JournalActor extends UntypedActor {
     @Override
     public void onReceive(final Object message) throws Exception {
         log.debug("Received message: {}", message);
-        if (message instanceof JournalMessage.ClasCreated) {
-            createClas((JournalMessage.ClasCreated) message);
-        } else if (message instanceof JournalMessage.AccountCreated) {
-            createAccount((JournalMessage.AccountCreated) message);
-        } else if (message instanceof JournalMessage.Transfer) {
-            createTransfer((JournalMessage.Transfer) message);
+        if (message instanceof ClasCreated) {
+            createClas((ClasCreated) message);
+        } else if (message instanceof AccountCreated) {
+            createAccount((AccountCreated) message);
+        } else if (message instanceof Transfer) {
+            createTransfer((Transfer) message);
         } else if (message instanceof JournalMessage.Clean) {
             clean((JournalMessage.Clean) message);
         } else if (message instanceof Ready.Request) {
@@ -96,8 +95,6 @@ public class JournalActor extends UntypedActor {
      */
     private void updateTimeDelay(final LocalDateTime timestamp) {
         final Duration d = Duration.between(timestamp, LocalDateTime.now());
-        if ((!delay.isPresent()) || (d.compareTo(delay.get()) > 0)) {
-            delay = Optional.of(d);
-        }
+        delay = Optional.of(delay.map(i -> d.compareTo(i) > 0 ? d : i).orElse(d));
     }
 }

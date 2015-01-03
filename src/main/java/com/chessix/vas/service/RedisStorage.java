@@ -24,8 +24,6 @@ import java.util.stream.Collectors;
 
 /**
  * Redis storage version of the {@code ISpeedStorage} interface.
- *
- * @author Mark Wigmans
  */
 public class RedisStorage implements ISpeedStorage {
 

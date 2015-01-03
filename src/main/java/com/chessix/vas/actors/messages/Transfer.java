@@ -15,23 +15,25 @@
  ******************************************************************************/
 package com.chessix.vas.actors.messages;
 
-import lombok.AccessLevel;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.ToString;
+import akka.serialization.Serialization;
+import akka.util.ByteString;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 /**
  * Transfer amount between two accounts
- *
- * @author Mark Wigmans
  */
-public class Transfer {
+public abstract class Transfer {
 
     @ToString
-    @EqualsAndHashCode
+    @EqualsAndHashCode(callSuper = false)
     @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
-    public static final class Request {
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    public static final class Request extends ZeroMQMessage<Request> {
+        private static final long serialVersionUID = -3784388784069792289L;
+
+        @Getter
+        String clasId;
         @Getter
         String from;
         @Getter
@@ -40,9 +42,16 @@ public class Transfer {
         int amount;
 
         private Request(final RequestBuilder requestBuilder) {
+            super(Request.class);
+            this.clasId = requestBuilder.clasId;
             this.from = requestBuilder.from;
             this.to = requestBuilder.to;
             this.amount = requestBuilder.amount;
+        }
+
+        @Override
+        public ByteString payload(final Serialization ser) {
+            return ByteString.fromArray(ser.serialize(new Request(clasId, from, to, amount)).get());
         }
     }
 
@@ -53,20 +62,25 @@ public class Transfer {
         @Getter
         boolean successful;
         @Getter
+        String clasId;
+        @Getter
         String message;
 
         private Response(final ResponseBuilder responseBuilder) {
             this.successful = responseBuilder.successful;
+            this.clasId = responseBuilder.clasId;
             this.message = responseBuilder.message;
         }
     }
 
     public static class RequestBuilder implements Builder<Request> {
-        private String from;
-        private String to;
-        private int amount;
+        private final String clasId;
+        private final String from;
+        private final String to;
+        private final int amount;
 
-        public RequestBuilder(final String from, final String to, final int amount) {
+        public RequestBuilder(final String clasId, final String from, final String to, final int amount) {
+            this.clasId = clasId;
             this.from = from;
             this.to = to;
             this.amount = amount;
@@ -78,11 +92,17 @@ public class Transfer {
     }
 
     public static class ResponseBuilder implements Builder<Response> {
-        private boolean successful;
+        private final boolean successful;
+        private String clasId;
         private String message;
 
         public ResponseBuilder(final boolean successful) {
             this.successful = successful;
+        }
+
+        public ResponseBuilder clasId(final String clasId) {
+            this.clasId = clasId;
+            return this;
         }
 
         public ResponseBuilder message(final String message) {

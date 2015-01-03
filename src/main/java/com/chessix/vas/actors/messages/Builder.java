@@ -15,6 +15,11 @@
  ******************************************************************************/
 package com.chessix.vas.actors.messages;
 
-public interface Builder<T> {
+/**
+ * Messages that follow the builder pattern.
+ *
+ * @param <T>
+ */
+interface Builder<T> {
     T build();
 }

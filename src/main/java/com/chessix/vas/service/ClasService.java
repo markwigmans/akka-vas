@@ -25,6 +25,8 @@ import com.chessix.vas.db.DBService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -47,6 +49,7 @@ public class ClasService {
     private final ISpeedStorage storage;
     private final DBService dbService;
     private final ActorRef journalActor;
+    private final ActorRef stormActor;
     private final ConcurrentMap<String, ActorRef> clasManager;
     private final int accountLength = 20;
 
@@ -54,12 +57,15 @@ public class ClasService {
      * Auto wired constructor
      */
     @Autowired
-    public ClasService(final ActorSystem system, final ISpeedStorage storage, final DBService dbService, final ActorRef journalActor) {
+    public ClasService(final ActorSystem system, final ISpeedStorage storage, final DBService dbService,
+                       final ActorRef journalActor,
+                        final ActorRef stormActor) {
         super();
         this.system = system;
         this.storage = storage;
         this.dbService = dbService;
         this.journalActor = journalActor;
+        this.stormActor = stormActor;
         this.clasManager = new ConcurrentHashMap<>();
     }
 
@@ -133,7 +139,10 @@ public class ClasService {
                 // check again, it might be changed after we get the lock
                 if (!clasManager.containsKey(clasName)) {
                     log.debug("getClas({}) : create clas actor", clasId);
-                    clas = system.actorOf(ClasActor.props(clasName, accountLength, journalActor, storage),
+                    clas = system.actorOf(ClasActor.props(new ClasActor.ClasActorBuilder(clasName, accountLength)
+                                    .setJournalActor(journalActor)
+                                    .setStormActor(stormActor)
+                                    .setStorage(storage)),
                             clasActorName(clasName));
                     clasManager.putIfAbsent(clasName, clas);
                 } else {

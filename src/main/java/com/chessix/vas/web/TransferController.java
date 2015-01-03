@@ -38,7 +38,7 @@ import scala.concurrent.duration.Duration;
 import java.util.concurrent.TimeUnit;
 
 /**
- * @author Mark Wigmans
+ *
  */
 @RestController
 @RequestMapping(value = "/transfer")
@@ -67,7 +67,7 @@ public class TransferController {
         final DeferredResult<Object> deferredResult = new DeferredResult<>();
         final ExecutionContext ec = actorSystem.dispatcher();
         final Future<Object> future = Patterns.ask(clas,
-                new Transfer.RequestBuilder(accountService.getAccountId(from), accountService.getAccountId(to), amount).build(), timeout);
+                new Transfer.RequestBuilder(clasId, accountService.getAccountId(from), accountService.getAccountId(to), amount).build(), timeout);
 
         future.onSuccess(new OnSuccess<Object>() {
             @Override

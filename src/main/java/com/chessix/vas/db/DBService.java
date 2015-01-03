@@ -30,8 +30,6 @@ import java.util.Optional;
 
 /**
  * Service to do the actual RDBMS actions.
- *
- * @author Mark Wigmans
  */
 @Service
 @Transactional

@@ -27,8 +27,6 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Test start/stop/report
- *
- * @author Mark Wigmans
  */
 @RestController
 @RequestMapping(value = "/simulation")

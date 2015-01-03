@@ -20,17 +20,17 @@
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-            <level>WARN</level>
+            <level>INFO</level>
         </filter>
-        <layout class="ch.qos.logback.classic.PatternLayout">
-            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
-        </layout>
+        <encoder>
+            <Pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</Pattern>
+        </encoder>
     </appender>
 
     <appender name="FILE" class="ch.qos.logback.core.FileAppender">
         <file>server.log</file>
         <encoder>
-            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>%d{HH:mm:ss.SSS} [%15.15thread] %-5level [%-36.36logger{36}] - %msg%n</pattern>
             <immediateFlush>false</immediateFlush>
         </encoder>
     </appender>
@@ -42,7 +42,7 @@
     <appender name="akka" class="ch.qos.logback.core.FileAppender">
         <file>akka.log</file>
         <encoder>
-            <pattern>%X{akkaTimestamp} %-5level %logger{36} %X{akkaSource} - %msg%n</pattern>
+            <pattern>%X{akkaTimestamp} %-5level [%-36.36logger{36}] %X{akkaSource} - %msg%n</pattern>
         </encoder>
     </appender>
 

@@ -15,26 +15,33 @@
  ******************************************************************************/
 package com.chessix.vas.actors.messages;
 
-import lombok.AccessLevel;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.ToString;
+import akka.serialization.Serialization;
+import akka.util.ByteString;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 /**
- * @author Mark Wigmans
+ *
  */
 public class Ready {
 
     @ToString
-    @EqualsAndHashCode
+    @EqualsAndHashCode(callSuper = false)
     @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
-    public static final class Request {
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    public static final class Request extends ZeroMQMessage<Request> {
+        private static final long serialVersionUID = 3557235084654822213L;
+
         @Getter
         boolean wait;
 
         private Request(final RequestBuilder requestBuilder) {
             this.wait = requestBuilder.wait;
+        }
+
+        @Override
+        public ByteString payload(final Serialization ser) {
+            return ByteString.fromArray(ser.serialize(new Request(wait)).get());
         }
     }
 

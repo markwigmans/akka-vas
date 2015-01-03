@@ -15,30 +15,35 @@
  ******************************************************************************/
 package com.chessix.vas.actors.messages;
 
-import lombok.AccessLevel;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.ToString;
+import akka.serialization.Serialization;
+import akka.util.ByteString;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.util.Optional;
 
 /**
  * Transfer amount between two accounts
- *
- * @author Mark Wigmans
  */
 public class Balance {
 
     @ToString
-    @EqualsAndHashCode
+    @EqualsAndHashCode(callSuper = false)
     @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
-    public static final class Request {
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    public static final class Request extends ZeroMQMessage<Request> {
+        private static final long serialVersionUID = 2288386618777528576L;
         @Getter
         String accountId;
 
         private Request(final RequestBuilder requestBuilder) {
+            super(Request.class);
             this.accountId = requestBuilder.accountId;
+        }
+
+        @Override
+        public ByteString payload(final Serialization ser) {
+            return ByteString.fromArray(ser.serialize(new Request(accountId)).get());
         }
     }
 

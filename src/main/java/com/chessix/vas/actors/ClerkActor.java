@@ -31,7 +31,7 @@ import java.util.Collection;
 import java.util.Optional;
 
 /**
- * @author Mark Wigmans
+ *
  */
 public class ClerkActor extends UntypedActor {
 
@@ -44,7 +44,6 @@ public class ClerkActor extends UntypedActor {
 
     private ClerkActor(final String clasId, final int accountLength, final ActorRef journalActor,
                        final ISpeedStorage storage) {
-        super();
         this.clasId = clasId;
         this.accountLength = accountLength;
         this.journalActor = journalActor;

@@ -17,14 +17,24 @@ package com.chessix.vas;
 
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
+import akka.actor.Props;
+import akka.routing.DefaultResizer;
+import akka.routing.RoundRobinPool;
+import akka.routing.SmallestMailboxPool;
+import backtype.storm.LocalCluster;
 import com.chessix.vas.actors.JournalActor;
 import com.chessix.vas.actors.NullJournalActor;
+import com.chessix.vas.actors.StormHazelcastActor;
+import com.chessix.vas.actors.StormZMQActor;
 import com.chessix.vas.db.DBService;
 import com.chessix.vas.service.HazelcastStorage;
 import com.chessix.vas.service.ISpeedStorage;
 import com.chessix.vas.service.RdbmsStorage;
 import com.chessix.vas.service.RedisStorage;
 import com.chessix.vas.web.RequestProcessingTimeInterceptor;
+import com.hazelcast.config.Config;
+import com.hazelcast.core.Hazelcast;
+import com.hazelcast.core.HazelcastInstance;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -44,6 +54,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 public class Application {
 
     @Autowired
+    private HazelcastInstance hzInstance;
+    @Autowired
     private StringRedisTemplate redisTemplate;
     @Autowired
     private DBService dbService;
@@ -55,6 +67,18 @@ public class Application {
 
     @Value("${vas.async.strategy:H}")
     private String asyncStrategy;
+
+    @Value("${storm.connector.strategy:hzc}")
+    private String stormConnector;
+
+    @Value("${storm.connector.pool.lower:2}")
+    private int connectorPoolLowerSize;
+    @Value("${storm.connector.pool.upper:15}")
+    private int connectorPoolUpperSize;
+
+    @Value("${storm.zmq.address:tcp://127.0.0.1:1237}")
+    private String stormBindAddress;
+
 
     /**
      * Start the whole application
@@ -74,16 +98,27 @@ public class Application {
     }
 
     @Bean
+    HazelcastInstance hzInstance() {
+        final Config cfg = new Config();
+        return Hazelcast.newHazelcastInstance(cfg);
+    }
+
+    @Bean
+    LocalCluster cluster() {
+        return new LocalCluster();
+    }
+
+    @Bean
     ISpeedStorage speedStorage() {
         if (async) {
             switch (asyncStrategy) {
                 case "R":
-                    log.debug("Redis speed storage");
+                    log.info("Redis speed storage");
                     return new RedisStorage(redisTemplate);
                 case "H":
                 default:
-                    log.debug("Hazelcast speed storage");
-                    return new HazelcastStorage();
+                    log.info("Hazelcast speed storage");
+                    return new HazelcastStorage(hzInstance);
             }
         } else {
             log.debug("RDBMS speed storage");
@@ -92,15 +127,33 @@ public class Application {
     }
 
     @Bean
-    ActorRef batchStorage() {
+    ActorRef journalActor() {
         if (async) {
             log.info("RDBMS batch storage");
-            return actorSystem.actorOf(JournalActor.props(dbService), "Journalizer");
+            return actorSystem.actorOf(JournalActor.props(dbService), "journalizer");
         } else {
             log.info("Dummy batch storage");
-            return actorSystem.actorOf(NullJournalActor.props(), "Dummy-Journalizer");
+            return actorSystem.actorOf(NullJournalActor.props(), "dummy-journalizer");
         }
     }
+
+    @Bean
+    ActorRef stormActor() {
+        final Props props;
+        switch (stormConnector) {
+            case "zmq":
+                props = StormZMQActor.props(stormBindAddress);
+                break;
+            case "hzc":
+            default:
+                props = StormHazelcastActor.props(hzInstance);
+        }
+
+        final DefaultResizer resizer = new DefaultResizer(connectorPoolLowerSize, connectorPoolUpperSize);
+        return actorSystem.actorOf(
+                new SmallestMailboxPool(connectorPoolLowerSize).withResizer(resizer).props(props), "storm-router");
+    }
+
 
     private static class MvcConfig extends WebMvcConfigurerAdapter {
 

@@ -28,8 +28,6 @@ import java.util.stream.Collectors;
 
 /**
  * RDBMS/JPA storage version of the {@code ISpeedStorage} interface.
- *
- * @author Mark Wigmans
  */
 public class RdbmsStorage implements ISpeedStorage {
 
