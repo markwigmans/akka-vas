@@ -68,7 +68,7 @@ public class ClerkActor extends UntypedActor {
             if (accountId.isPresent()) {
                 getSender().tell(new CreateAccount.ResponseBuilder(true).clasId(request.getClasId()).accountId(accountId.get()).build(),
                         getSelf());
-                journalActor.tell(new JournalMessage.AccountCreatedBuilder(clasId, accountId.get()).build(), getSelf());
+                journalActor.tell(new CreateAccount.RequestBuilder(clasId, accountId.get()).build(), getSelf());
             } else {
                 getSender().tell(
                         new CreateAccount.ResponseBuilder(false).clasId(request.getClasId()).message("Account does already exist")
@@ -78,7 +78,7 @@ public class ClerkActor extends UntypedActor {
             final Transfer.Request request = (Transfer.Request) message;
             if (transfer(request)) {
                 getSender().tell(new Transfer.ResponseBuilder(true).message("Ok").build(), getSelf());
-                journalActor.tell(new JournalMessage.TransferBuilder(clasId, request.getFrom(), request.getTo(), request.getAmount()).build(), getSelf());
+                journalActor.tell(message, getSelf());
             } else {
                 getSender().tell(new Transfer.ResponseBuilder(false).message("Accounts do not exist").build(), getSelf());
             }

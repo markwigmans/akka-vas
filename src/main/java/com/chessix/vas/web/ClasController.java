@@ -22,7 +22,6 @@ import akka.pattern.Patterns;
 import akka.util.Timeout;
 import com.chessix.vas.actors.messages.Clean;
 import com.chessix.vas.actors.messages.Count;
-import com.chessix.vas.actors.messages.JournalMessage;
 import com.chessix.vas.actors.messages.Validate;
 import com.chessix.vas.dto.ClasCreated;
 import com.chessix.vas.service.ClasService;
@@ -86,11 +85,12 @@ public class ClasController {
     public DeferredResult<Object> clean(@PathVariable final String clasId) {
         log.debug("clean({})", clasId);
 
-        journalActor.tell(new JournalMessage.CleanBuilder(clasId).build(), ActorRef.noSender());
+        final Clean.Request request = new Clean.RequestBuilder(clasId).build();
+        journalActor.tell(request, ActorRef.noSender());
 
         final DeferredResult<Object> deferredResult = new DeferredResult<>();
         final ActorRef clas = clasService.getClas(clasId);
-        final Future<Object> future = Patterns.ask(clas, new Clean.RequestBuilder(clasId).build(), timeout);
+        final Future<Object> future = Patterns.ask(clas, request, timeout);
 
         future.onComplete(new OnComplete<Object>() {
             @Override

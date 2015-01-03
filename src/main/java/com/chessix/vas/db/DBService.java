@@ -15,10 +15,10 @@
  ******************************************************************************/
 package com.chessix.vas.db;
 
-import com.chessix.vas.actors.messages.JournalMessage.AccountCreated;
-import com.chessix.vas.actors.messages.JournalMessage.ClasCreated;
-import com.chessix.vas.actors.messages.JournalMessage.Clean;
-import com.chessix.vas.actors.messages.JournalMessage.Transfer;
+import com.chessix.vas.actors.messages.Clean;
+import com.chessix.vas.actors.messages.CreateAccount;
+import com.chessix.vas.actors.messages.CreateClas;
+import com.chessix.vas.actors.messages.Transfer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -49,22 +49,22 @@ public class DBService {
         this.transactionRepository = transactionRepository;
     }
 
-    public void createClas(final ClasCreated message) {
+    public void createClas(final CreateClas.Request message) {
         log.debug("createClas({})", message);
         clasRepository.save(new CLAS(message.getClasId()));
     }
 
-    public void createAccount(final AccountCreated message) {
+    public void createAccount(final CreateAccount.Request message) {
         log.debug("createAccount({})", message);
         final CLAS clas = clasRepository.findByExternalId(message.getClasId());
         accountRepository.save(new Account(clas, message.getAccountId(), 0));
     }
 
-    public void createTransfer(final Transfer message) {
+    public void createTransfer(final Transfer.Request message) {
         log.debug("createTransfer({})", message);
         final CLAS clas = clasRepository.findByExternalId(message.getClasId());
-        final Account from = accountRepository.findByClasAndExternalId(clas, message.getFromAccountId());
-        final Account to = accountRepository.findByClasAndExternalId(clas, message.getToAccountId());
+        final Account from = accountRepository.findByClasAndExternalId(clas, message.getFrom());
+        final Account to = accountRepository.findByClasAndExternalId(clas, message.getTo());
         transactionRepository.save(new Transaction(clas, from, to, message.getAmount(), BaseModel.fromLocalDateTime(message.getTimestamp())));
         from.setBalance(from.getBalance() - message.getAmount());
         to.setBalance(to.getBalance() + message.getAmount());
@@ -72,7 +72,7 @@ public class DBService {
         accountRepository.save(to);
     }
 
-    public void clean(final Clean message) {
+    public void clean(final Clean.Request message) {
         log.debug("starting clean({})", message);
         final CLAS clas = clasRepository.findByExternalId(message.getClasId());
         if (clas != null) {

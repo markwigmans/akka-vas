@@ -74,7 +74,7 @@ public class AccountController {
         log.info("createAccount({},{})", clasId, accountId);
         final ActorRef clas = clasService.getClas(clasId);
         final DeferredResult<Object> deferredResult = new DeferredResult<>();
-        final Future<Object> future = Patterns.ask(clas, new CreateAccount.RequestBuilder(clasId).accountId(accountId).build(), timeout);
+        final Future<Object> future = Patterns.ask(clas, new CreateAccount.RequestBuilder(clasId, accountId).build(), timeout);
         future.onSuccess(new OnSuccess<Object>() {
             @Override
             public void onSuccess(final Object result) {
@@ -114,7 +114,7 @@ public class AccountController {
             final String accountId = Integer.toString(i);
             log.debug("createAccounts() : create {}", accountId);
             final Future<Object> future = Patterns.ask(clas,
-                    new CreateAccount.RequestBuilder(clasId).accountId(accountId).build(), timeout * countValue);
+                    new CreateAccount.RequestBuilder(clasId, accountId).build(), timeout * countValue);
 
             future.onSuccess(new OnSuccess<Object>() {
                 @Override

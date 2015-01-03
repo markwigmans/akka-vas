@@ -20,6 +20,8 @@ import akka.util.ByteString;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.time.LocalDateTime;
+
 /**
  * Create a new VAS CLAS
  */
@@ -31,17 +33,19 @@ public abstract class CreateClas {
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     public static final class Request extends ZeroMQMessage<Request> {
         private static final long serialVersionUID = 665333946148389852L;
-
         @Getter
         String clasId;
+        @Getter
+        LocalDateTime timestamp;
 
         private Request(final RequestBuilder requestBuilder) {
             this.clasId = requestBuilder.clasId;
+            this.timestamp = requestBuilder.timestamp;
         }
 
         @Override
         public ByteString payload(final Serialization ser) {
-            return ByteString.fromArray(ser.serialize(new Request(clasId)).get());
+            return ByteString.fromArray(ser.serialize(new Request(clasId, timestamp)).get());
         }
     }
 
@@ -65,9 +69,11 @@ public abstract class CreateClas {
 
     public static class RequestBuilder implements Builder<Request> {
         private String clasId;
+        private LocalDateTime timestamp;
 
         public RequestBuilder(final String clasId) {
             this.clasId = clasId;
+            this.timestamp = LocalDateTime.now();
         }
 
         public Request build() {

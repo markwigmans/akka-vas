@@ -15,7 +15,10 @@
  ******************************************************************************/
 package com.chessix.vas.service;
 
-import com.chessix.vas.actors.messages.JournalMessage;
+import com.chessix.vas.actors.messages.Clean;
+import com.chessix.vas.actors.messages.CreateAccount;
+import com.chessix.vas.actors.messages.CreateClas;
+import com.chessix.vas.actors.messages.Transfer;
 import com.chessix.vas.db.Account;
 import com.chessix.vas.db.DBService;
 import org.springframework.data.domain.Page;
@@ -70,23 +73,23 @@ public class RdbmsStorage implements ISpeedStorage {
 
     @Override
     public void transfer(final String clasId, final String fromAccountId, final String toAccountId, final int value) {
-        dbService.createTransfer(new JournalMessage.TransferBuilder(clasId, fromAccountId, toAccountId, value).build());
+        dbService.createTransfer(new Transfer.RequestBuilder(clasId, fromAccountId, toAccountId, value).build());
     }
 
     @Override
     public boolean create(final String clasId) {
-        dbService.createClas(new JournalMessage.ClasCreatedBuilder(clasId).build());
+        dbService.createClas(new CreateClas.RequestBuilder(clasId).build());
         return true;
     }
 
     @Override
     public boolean create(final String clasId, final String accountId) {
-        dbService.createAccount(new JournalMessage.AccountCreatedBuilder(clasId, accountId).build());
+        dbService.createAccount(new CreateAccount.RequestBuilder(clasId, accountId).build());
         return true;
     }
 
     @Override
     public void delete(final String clasId) {
-        dbService.clean(new JournalMessage.CleanBuilder(clasId).build());
+        dbService.clean(new Clean.RequestBuilder(clasId).build());
     }
 }

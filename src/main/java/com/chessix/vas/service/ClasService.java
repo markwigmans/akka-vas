@@ -19,14 +19,11 @@ import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import com.chessix.vas.actors.ClasActor;
 import com.chessix.vas.actors.messages.CreateClas;
-import com.chessix.vas.actors.messages.JournalMessage;
 import com.chessix.vas.db.Account;
 import com.chessix.vas.db.DBService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -59,7 +56,7 @@ public class ClasService {
     @Autowired
     public ClasService(final ActorSystem system, final ISpeedStorage storage, final DBService dbService,
                        final ActorRef journalActor,
-                        final ActorRef stormActor) {
+                       final ActorRef stormActor) {
         super();
         this.system = system;
         this.storage = storage;
@@ -80,12 +77,13 @@ public class ClasService {
         final String clasName = getClasId(clasId);
         if (storage.isEmpty(clasName)) {
             log.debug("create({}) : newly", clasId);
-            journalActor.tell(new JournalMessage.ClasCreatedBuilder(clasName).build(), ActorRef.noSender());
+            final CreateClas.Request request = new CreateClas.RequestBuilder(clasId).build();
+            journalActor.tell(request, ActorRef.noSender());
 
             final ActorRef clas = getClas(clasName);
             final Duration timeout = Duration.create(1, TimeUnit.SECONDS);
             try {
-                Await.result(ask(clas, new CreateClas.RequestBuilder(clasId).build(), timeout.toMillis()), timeout);
+                Await.result(ask(clas, request, timeout.toMillis()), timeout);
                 log.info("CLAS created: {}", clas);
                 clasManager.putIfAbsent(clasName, clas);
                 return true;

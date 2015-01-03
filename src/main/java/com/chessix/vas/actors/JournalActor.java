@@ -19,11 +19,7 @@ import akka.actor.Props;
 import akka.actor.UntypedActor;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
-import com.chessix.vas.actors.messages.JournalMessage;
-import com.chessix.vas.actors.messages.JournalMessage.AccountCreated;
-import com.chessix.vas.actors.messages.JournalMessage.ClasCreated;
-import com.chessix.vas.actors.messages.JournalMessage.Transfer;
-import com.chessix.vas.actors.messages.Ready;
+import com.chessix.vas.actors.messages.*;
 import com.chessix.vas.db.DBService;
 
 import java.time.Duration;
@@ -55,14 +51,14 @@ public class JournalActor extends UntypedActor {
     @Override
     public void onReceive(final Object message) throws Exception {
         log.debug("Received message: {}", message);
-        if (message instanceof ClasCreated) {
-            createClas((ClasCreated) message);
-        } else if (message instanceof AccountCreated) {
-            createAccount((AccountCreated) message);
-        } else if (message instanceof Transfer) {
-            createTransfer((Transfer) message);
-        } else if (message instanceof JournalMessage.Clean) {
-            clean((JournalMessage.Clean) message);
+        if (message instanceof CreateClas.Request) {
+            createClas((CreateClas.Request) message);
+        } else if (message instanceof CreateAccount.Request) {
+            createAccount((CreateAccount.Request) message);
+        } else if (message instanceof Transfer.Request) {
+            createTransfer((Transfer.Request) message);
+        } else if (message instanceof Clean.Request) {
+            clean((Clean.Request) message);
         } else if (message instanceof Ready.Request) {
             log.info("Max delay: {}", delay);
             getSender().tell(new Ready.ResponseBuilder(true).message("Ready").build(), getSelf());
@@ -71,22 +67,22 @@ public class JournalActor extends UntypedActor {
         }
     }
 
-    private void createClas(final ClasCreated message) {
+    private void createClas(final CreateClas.Request message) {
         updateTimeDelay(message.getTimestamp());
         service.createClas(message);
     }
 
-    private void createAccount(final AccountCreated message) {
+    private void createAccount(final CreateAccount.Request message) {
         updateTimeDelay(message.getTimestamp());
         service.createAccount(message);
     }
 
-    private void createTransfer(final Transfer message) {
+    private void createTransfer(final Transfer.Request message) {
         updateTimeDelay(message.getTimestamp());
         service.createTransfer(message);
     }
 
-    private void clean(final JournalMessage.Clean message) {
+    private void clean(final Clean.Request message) {
         service.clean(message);
     }
 

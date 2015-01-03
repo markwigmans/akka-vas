@@ -20,6 +20,8 @@ import akka.util.ByteString;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.time.LocalDateTime;
+
 /**
  * Transfer amount between two accounts
  */
@@ -40,6 +42,8 @@ public abstract class Transfer {
         String to;
         @Getter
         int amount;
+        @Getter
+        LocalDateTime timestamp;
 
         private Request(final RequestBuilder requestBuilder) {
             super(Request.class);
@@ -47,11 +51,12 @@ public abstract class Transfer {
             this.from = requestBuilder.from;
             this.to = requestBuilder.to;
             this.amount = requestBuilder.amount;
+            this.timestamp = requestBuilder.timestamp;
         }
 
         @Override
         public ByteString payload(final Serialization ser) {
-            return ByteString.fromArray(ser.serialize(new Request(clasId, from, to, amount)).get());
+            return ByteString.fromArray(ser.serialize(new Request(clasId, from, to, amount, timestamp)).get());
         }
     }
 
@@ -78,12 +83,14 @@ public abstract class Transfer {
         private final String from;
         private final String to;
         private final int amount;
+        private LocalDateTime timestamp;
 
         public RequestBuilder(final String clasId, final String from, final String to, final int amount) {
             this.clasId = clasId;
             this.from = from;
             this.to = to;
             this.amount = amount;
+            this.timestamp = LocalDateTime.now();
         }
 
         public Request build() {
